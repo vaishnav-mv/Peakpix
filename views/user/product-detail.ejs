@@ -1,0 +1,346 @@
+<div class="container my-5">
+  <div class="row">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <%= product.name %>
+        </li>
+      </ol>
+    </nav>
+
+    <div class="container mt-4">
+      <div class="row">
+        <!-- Left Side: Image Thumbnails -->
+        <div class="col-md-2">
+          <div class="d-flex flex-column gap-2">
+            <!-- Main Image Thumbnail -->
+            <img
+              src="<%= product.images.main %>"
+              class="img-thumbnail"
+              alt="Main Product Image"
+              onclick="updateMainImage('<%= product.images.main %>')"
+            />
+            <!-- Supporting Images -->
+            <% product.images.supports.slice(0, 2).forEach((img, index) => { %>
+            <img
+              src="<%= img %>"
+              class="img-thumbnail"
+              alt="Product Image <%= index + 1 %>"
+              onclick="updateMainImage('<%= img %>')"
+            />
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Center: Main Image -->
+        <div
+          class="col-md-6 d-flex align-items-center justify-content-center position-relative"
+        >
+          <img
+            id="mainImage"
+            src="<%= product.images.main %>"
+            class="img-fluid border border-light rounded"
+            alt="<%= product.name %>"
+            style="width: 100%; max-height: 500px; object-fit: contain"
+          />
+        </div>
+
+        <!-- Magnifier container, positioned fixed to the right -->
+        <div id="magnifier" class="magnifier">
+          <img
+            id="magnifierImage"
+            src="<%= product.images.main %>"
+            class="img-fluid"
+            alt="<%= product.name %>"
+          />
+        </div>
+
+        <!-- Right Side: Product Details -->
+        <div class="col-md-3">
+          <h1 class="h3 mb-3"><%= product.name %></h1>
+          <!-- Product Price -->
+          <% if (product.discountedPrice < product.price) { %>
+            <h4 class="text-primary mb-3">
+              ₹<%= product.discountedPrice.toFixed(2) %>
+              <span class="text-muted ms-2">
+                <del>₹<%= product.price.toFixed(2) %></del>
+              </span>
+            </h4>
+          <% } else { %>
+            <h4 class="text-primary mb-3">₹<%= product.price.toFixed(2) %></h4>
+          <% } %>
+          <p class="mb-4"><%= product.description %></p>
+          <!-- Stock Status -->
+          <% if (product.isOutOfStock) { %>
+          <div
+            class="alert alert-danger d-flex align-items-center mb-4"
+            role="alert"
+          >
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <div>
+              <strong>Sold Out</strong><br />
+              This item is currently out of stock.
+            </div>
+          </div>
+          <% } else { %>
+          <p class="text-muted mb-4">
+            Stock left: <strong><%= product.stock %></strong>
+          </p>
+          <% } %>
+
+          <!-- Reviews Section -->
+          <div class="mb-4">
+            <h5 class="mb-2">Reviews</h5>
+            <div class="d-flex align-items-center mb-2">
+              <span class="text-warning">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="far fa-star"></i>
+              </span>
+              <span class="text-muted ms-2">(4.0)</span>
+            </div>
+            <p class="text-muted">Based on <strong>120</strong> reviews.</p>
+          </div>
+
+          
+          <!-- Action Buttons -->
+          <div class="d-flex gap-3">
+            <div
+              class="btn-group w-100"
+              role="group"
+              aria-label="Product Actions"
+            >
+              <!-- Add to Cart Button -->
+              <a
+                class="btn btn-dark-purple rounded-start w-50 <% if (product.isOutOfStock) { %> disabled <% } %>"
+                onclick="addToCart('<%= product._id %>')"
+              >
+                <i class="fas fa-cart-plus me-2"></i> Add to Cart
+              </a>
+              <!-- Wishlist Button -->
+              <a href="#" class="btn btn-outline-dark-purple rounded-end w-50">
+                <i class="fas fa-heart me-2"></i> Wishlist
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Assurance Section -->
+<div class="container my-5">
+  <div class="row text-center justify-content-center">
+    <div class="col-12">
+      <div class="bg-light rounded-3 p-4 shadow-sm">
+        <div class="row text-center">
+          <!-- Assurance Item 1 -->
+          <div class="col-12 col-md-3 mb-4 mb-md-0">
+            <div class="d-flex flex-column align-items-center">
+              <i class="fas fa-cogs fa-3x mb-2 text-primary"></i>
+              <p class="mb-0 text-muted fs-6"><b>1 Year</b><br />Warranty</p>
+            </div>
+          </div>
+
+          <!-- Assurance Item 2 -->
+          <div class="col-12 col-md-3 mb-4 mb-md-0">
+            <div class="d-flex flex-column align-items-center">
+              <i class="fas fa-sync-alt fa-3x mb-2 text-primary"></i>
+              <p class="mb-0 text-muted fs-6"><b>7-day</b><br />Replacement</p>
+            </div>
+          </div>
+
+          <!-- Assurance Item 3 -->
+          <div class="col-12 col-md-3 mb-4 mb-md-0">
+            <div class="d-flex flex-column align-items-center">
+              <i class="fas fa-truck fa-3x mb-2 text-primary"></i>
+              <p class="mb-0 text-muted fs-6"><b>Free Express</b><br />Delivery</p>
+            </div>
+          </div>
+
+          <!-- Assurance Item 4 -->
+          <div class="col-12 col-md-3 mb-4 mb-md-0">
+            <div class="d-flex flex-column align-items-center">
+              <i class="fas fa-receipt fa-3x mb-2 text-primary"></i>
+              <p class="mb-0 text-muted fs-6"><b>GST</b><br />Billing</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Related Products Section -->
+<div class="container my-5">
+  <h2 class="mb-4">Related Products</h2>
+  <div class="row">
+    <% relatedProducts.forEach(product => { %>
+    <div class="col-md-4 col-lg-3 mb-4">
+      <div class="card border-light shadow-sm rounded">
+        <img
+          src="<%= product.images.main %>"
+          class="card-img-top img-fluid"
+          alt="<%= product.name %>"
+        />
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title mb-2 text-truncate" title="<%= product.name %>">
+            <%= product.name %>
+          </h5>
+          <p class="card-text mb-3">
+            <% if (product.discountedPrice < product.price) { %>
+              <!-- Discounted Price and Original Price -->
+              <span class="text-primary">
+                ₹<%= product.discountedPrice.toFixed(2) %>
+              </span>
+              <span class="text-muted ms-2">
+                <del>₹<%= product.price.toFixed(2) %></del>
+              </span>
+            <% } else { %>
+              <!-- Original Price -->
+              <span class="text-primary">
+                ₹<%= product.price.toFixed(2) %>
+              </span>
+            <% } %>
+          </p>
+          <div class="mb-2">
+            <span class="text-warning">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="far fa-star"></i>
+            </span>
+            <span class="text-muted">(4.0)</span>
+          </div>
+          <a
+            href="/shop/<%= product._id %>"
+            class="btn btn-dark rounded mt-auto"
+            >View Details</a
+          >
+        </div>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+</div>
+
+<style>
+  .img-thumbnail {
+    width: 100%;
+    height: auto;
+    object-fit: fit;
+    cursor: pointer;
+  }
+
+  .border-light {
+    border-color: #f8f9fa !important;
+  }
+
+  .text-primary {
+    color: #5a2b81 !important;
+  }
+
+  .bg-dark-purple {
+    background-color: #5a2b81;
+  }
+
+  .btn-dark-purple {
+    background-color: #5a2b81;
+    border-color: #5a2b81;
+    color: #ffffff;
+  }
+
+  .btn-dark-purple:hover {
+    background-color: #7a479b;
+    border-color: #7a479b;
+  }
+
+  /* Magnifier styles */
+  .magnifier {
+    position: fixed;
+    top: 10%;
+    right: 0;
+    width: 350px; /* Size of the magnifier container */
+    height: 350px; /* Size of the magnifier container */
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: none;
+    z-index: 1000;
+  }
+
+  .magnifier img {
+    position: absolute;
+    width: 600%; /* Increase based on zoom level */
+    height: auto;
+    transform: scale(6); /* Increase zoom level */
+    transform-origin: top left; /* Ensure zoom starts from the top-left corner */
+  }
+  .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .card-img-top {
+    height: 200px;
+    object-fit: contain;
+  }
+  .text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const mainImage = document.getElementById("mainImage");
+    const magnifier = document.getElementById("magnifier");
+    const magnifierImage = document.getElementById("magnifierImage");
+    const magnifierSize = 300; // Same as magnifier width/height in CSS
+
+    function updateImages(imgSrc) {
+      mainImage.src = imgSrc;
+      magnifierImage.src = imgSrc;
+    }
+
+    function showMagnifier(e) {
+      magnifier.style.display = "block";
+
+      const { offsetX: x, offsetY: y, target } = e;
+      const { offsetWidth: w, offsetHeight: h } = target;
+
+      // Calculate zoom position
+      const zoomX = (x / w) * 100;
+      const zoomY = (y / h) * 100;
+
+      magnifierImage.style.transform = `translate(-${zoomX}%, -${zoomY}%) scale(2)`;
+      magnifier.style.top = `${e.clientY - magnifierSize / 2}px`;
+      magnifier.style.left = `${e.clientX + 20}px`; // Adjust based on your layout
+    }
+
+    function hideMagnifier() {
+      magnifier.style.display = "none";
+    }
+
+    mainImage.addEventListener("mousemove", showMagnifier);
+    mainImage.addEventListener("mouseleave", hideMagnifier);
+
+    window.updateMainImage = function (imgSrc) {
+      updateImages(imgSrc);
+    };
+  });
+</script>
+
+<script src="/js/cart.js"></script>

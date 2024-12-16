@@ -1,0 +1,174 @@
+<div class="container-fluid mt-3">
+  <div class="row">
+    <!-- Main content -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/admin" class="text-light">Admin</a>
+        </li>
+        <li class="breadcrumb-item active text-info" aria-current="page">
+          Category Management
+        </li>
+      </ol>
+    </nav>
+    <div class="container">
+      <div class="row">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="text-light">Category Management</h3>
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addCategoryModal"
+          >
+            Add New Category
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table text-light">
+            <thead>
+              <tr>
+                <th scope="col">Sl</th>
+                <th scope="col">Category name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody id="categoryList">
+              <% categories.forEach((category, index) => { %>
+              <tr>
+                <th scope="row"><%= index + 1 %></th>
+                <td><%= category.name %></td>
+                <td><%= category.description %></td>
+                <td>
+                  <div class="d-flex justify-content-between gap-3">
+                    <form
+                      action="/admin/category/toggle-status/<%= category._id %>"
+                      method="POST"
+                      style="display: inline"
+                      class="w-100"
+                    >
+                      <button
+                        type="submit"
+                        class="btn w-100 <%= category.isActive ? 'btn-dark' : 'btn-primary' %>"
+                      >
+                        <%= category.isActive ? "Unlist" : "List" %>
+                      </button>
+                    </form>
+                    <button class="btn btn-outline-light w-100" data-bs-toggle="modal" data-bs-target="#editCategoryModal<%= category._id %>">Edit</button>
+                    <button
+                      class="btn btn-outline-danger w-100"
+                      onclick="handleCategoryDelete('<%= category._id %>')"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>            
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Category Modal -->
+<div
+  class="modal fade"
+  id="addCategoryModal"
+  tabindex="-1"
+  aria-labelledby="addCategoryModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header bg-dark">
+        <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form id="addCategoryForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="categoryName" class="form-label">Category Name</label>
+            <input
+              type="text"
+              class="form-control custom-search-input"
+              id="categoryName"
+              name="name"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="categoryDescription" class="form-label"
+              >Description</label
+            >
+            <textarea
+              class="form-control custom-search-input"
+              id="categoryDescription"
+              name="description"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary">Add Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit category Modals (one for each category) -->
+<% categories.forEach((category) => { %>
+  <div class="modal fade" id="editCategoryModal<%= category._id %>" tabindex="-1" aria-labelledby="editCategoryModalLabel<%= category._id %>" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header bg-dark text-light">
+          <h5 class="modal-title" id="editcategoryModalLabel<%= category._id %>">Edit Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="categoryName<%= category._id %>" class="form-label">Category Name</label>
+            <input
+              type="text"
+              class="form-control custom-search-input"
+              id="categoryName<%= category._id %>"
+              name="name"
+              value="<%= category.name %>"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="categoryDescription<%= category._id %>" class="form-label">Description</label>
+            <textarea
+              class="form-control custom-search-input"
+              id="categoryDescription<%= category._id %>"
+              name="description"
+              rows="2"
+              required
+            ><%= category.description %></textarea>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="handleCategoryUpdate('<%= category._id %>')">Update category</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% }) %>
+>
+
+
+<script src="/js/categoryManagement.js"></script>

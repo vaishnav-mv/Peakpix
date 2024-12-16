@@ -1,0 +1,45 @@
+<div class="container my-5 col-lg-6 col-md-10 col-sm-12">
+  <nav aria-label="breadcrumb"></nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item"><a href="/account">My Account</a></li>
+      <li class="breadcrumb-item"><a href="/account/addresses">Manage Addresses</a></li>
+      <li class="breadcrumb-item active" aria-current="page">
+        Edit <%= address.addressType %> Address
+      </li>
+    </ol>
+  </nav>
+
+  <h1 class="mb-4">Edit Address</h1>
+  <form action="/account/addresses/edit/<%= address._id %>" method="POST">
+      <div class="mb-3">
+          <label for="customName" class="form-label">Custom Name</label>
+          <input type="text" id="customName" name="customName" class="form-control" value="<%= address.customName %>">
+      </div>
+      <div class="mb-3">
+          <label for="addressType" class="form-label">Address Type</label>
+          <input type="text" id="addressType" name="addressType" class="form-control" value="<%= address.addressType %>">
+      </div>
+      <div class="mb-3">
+          <label for="location" class="form-label">Location</label>
+          <input type="text" id="location" name="location" class="form-control" value="<%= address.location %>">
+      </div>
+      <div class="mb-3">
+          <label for="city" class="form-label">City</label>
+          <input type="text" id="city" name="city" class="form-control" value="<%= address.city %>">
+      </div>
+      <div class="mb-3">
+          <label for="state" class="form-label">State</label>
+          <input type="text" id="state" name="state" class="form-control" value="<%= address.state %>">
+      </div>
+      <div class="mb-3">
+          <label for="zip" class="form-label">Zip Code</label>
+          <input type="text" id="zip" name="zip" class="form-control" value="<%= address.zip %>">
+      </div>
+      <div class="mb-3">
+          <label for="country" class="form-label">Country</label>
+          <input type="text" id="country" name="country" class="form-control" value="<%= address.country %>">
+      </div>
+      <button type="submit" class="btn btn-primary">Update Address</button>
+  </form>
+</div>

@@ -1,0 +1,62 @@
+<div
+  class="container my-5 col-md-10 col-sm-12"
+  style="min-height: 50vh"
+>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item"><a href="/account">My Account</a></li>
+      <li class="breadcrumb-item active" aria-current="page">
+        Order History
+      </li>
+    </ol>
+  </nav>
+  <h2 class="mb-4">Order History</h2>
+
+  <% if (orders.length === 0) { %>
+    <div class="alert alert-info text-center" role="alert">No orders found.</div>
+  <% } else { %>
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">Order #</th>
+            <th scope="col">Order date</th>
+            <th scope="col">Status</th>
+            <th scope="col">Total</th>
+            <th scope="col">Items</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach((order) => { %>
+            <tr onclick="window.location.href='/account/order-history/<%= order._id %>'" style="cursor: pointer;">
+              <td class="align-middle"><%= order._id %></td>
+              <td class="align-middle"><%= new Date(order.dateOrdered).toLocaleDateString() %></td>
+              <td class="align-middle">
+                <span class="badge 
+                  <%= order.status === 'Delivered' ? 'bg-success' : order.status === 'Canceled' ? 'bg-danger' : 'bg-primary' %>">
+                  <%= order.status %>
+                </span>
+              </td>
+              <td class="align-middle">₹<%= order.finalTotal %></td>
+              <td class="align-middle">
+                <div class="d-flex align-items-center">
+                  <% order.orderItems.slice(0, 3).forEach(item => { %>
+                    <img src="<%= item.product.images.main %>" class="img-fluid me-2" style="width: 50px; height: 50px; object-fit: cover;" alt="<%= item.product.name %>">
+                  <% }); %>
+                  <% if (order.orderItems.length > 3) { %>
+                    <span>+<%= order.orderItems.length - 3 %></span>
+                  <% } %>
+                </div>
+              </td>
+              <td class="align-middle">
+                <a href="/account/order-history/<%= order._id %>" class="btn btn-outline-primary btn-sm">View Details</a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>

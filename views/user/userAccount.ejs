@@ -1,0 +1,248 @@
+<link rel="stylesheet" href="/css/user-account.css" />
+
+<div class="container mt-4 col-5">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">My Account</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-center mb-4 heading">
+    <h2>User Details</h2>
+  </div>
+
+  <!-- User Details Section -->
+  <div class="user-details">
+    <form id="userForm" data-id="<%= user._id %>">
+      <div class="form-row">
+        <div class="form-group my-3">
+          <label for="firstName">First Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="firstName"
+            name="firstName"
+            value="<%= user.firstName %>"
+          />
+        </div>
+        <div class="form-group my-3">
+          <label for="lastName">Last Name</label>
+          <input type="text" class="form-control" id="lastName" name="lastName" value="<%= user.lastName %>" />
+        </div>
+      </div>
+      <div class="form-group my-3">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          name="email"
+          value="<%= user.email %>"
+        />
+      </div>
+      <div class="form-group my-3">
+        <label for="phone">Phone</label>
+        <input
+          type="tel"
+          class="form-control"
+          id="phone"
+          name="mobile"
+          value="<%= user.mobile %>"
+        />
+      </div>
+      <div class="form-group my-3">
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender" class="form-control">
+          <option  value="Male" <%= user.gender === 'Male' ? 'selected' : '' %> >Male</option>
+          <option  value="Female" <%= user.gender === 'Female' ? 'selected' : '' %> >Female</option>
+          <option  value="Other" <%= user.gender === 'Other' ? 'selected' : '' %> >Other</option>
+        </select>
+      </div>
+      <div class="form-group my-3">
+        <label for="dob">Date of Birth</label>
+        <input type="date" class="form-control" id="dob" name="dob"  value="<%= user.dob ? new Date(user.dob).toISOString().split('T')[0] : '' %>"/>
+      </div>
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-outline-dark w-25" id="updateButton">Update</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="wallet-balance my-4">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Wallet Balance</h4>
+        <div class="d-flex justify-content-between align-items-center py-3">
+          <span class="h2 mb-0">₹<%= user.walletBalance || 0 %></span>
+          <a href="#" class="btn btn-outline-dark">View Transactions</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Buttons Section -->
+  <div class="account-buttons my-5">
+    <div
+      class="btn-group btn-group-lg btn-block w-100"
+      role="group"
+      aria-label="Account Actions"
+    >
+      <a
+        href="/account/addresses"
+        class="btn btn-primary py-4 px-0 d-flex justify-content-center align-items-center gap-3 w-50"
+      >
+        <i class="fas fa-map-marker-alt"></i> Manage Address
+      </a>
+      <a
+        href="/account/order-history"
+        class="btn btn-secondary py-4 px-0 d-flex justify-content-center align-items-center gap-3 w-50"
+      >
+        <i class="fas fa-box"></i>My Orders
+      </a>
+    </div>
+  </div>
+
+  <!-- More Section -->
+  <div class="card mb-4 more">
+    <div class="card-body px-5">
+      <h4 class="card-title my-3">More</h4>
+      <ul class="list-unstyled">
+        <li class="my-4">
+          <a
+            href="#"
+            class="d-flex align-items-center justify-content-between text-dark py-2"
+          >
+            <div class="d-flex align-items-center gap-4">
+              <i class="fas fa-headset fa-lg"></i>
+              <span>Help and Support</span>
+            </div>
+            <span class="ml-auto">
+              <i class="fas fa-chevron-right"></i>
+            </span>
+          </a>
+        </li>
+        <li class="my-4">
+          <a
+            href="#"
+            class="d-flex align-items-center justify-content-between text-dark py-2"
+          >
+            <div class="d-flex align-items-center gap-4">
+              <i class="fas fa-question-circle fa-lg mr-3"></i>
+              <span>FAQs</span>
+            </div>
+            <span class="ml-auto">
+              <i class="fas fa-chevron-right"></i>
+            </span>
+          </a>
+        </li>
+        <li class="my-4">
+          <a
+            href="#"
+            class="d-flex align-items-center justify-content-between text-dark py-2"
+          >
+            <div class="d-flex align-items-center gap-4">
+              <i class="fas fa-file-alt fa-lg mr-3"></i>
+              <span>Terms & Conditions</span>
+            </div>
+            <span class="ml-auto">
+              <i class="fas fa-chevron-right"></i>
+            </span>
+          </a>
+        </li>
+        <li class="my-4">
+          <a
+            href="#"
+            class="d-flex align-items-center justify-content-between text-dark py-2"
+          >
+            <div class="d-flex align-items-center gap-4">
+              <i class="fas fa-envelope fa-lg mr-3"></i>
+              <span>Get in Touch</span>
+            </div>
+            <span class="ml-auto">
+              <i class="fas fa-chevron-right"></i>
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="change-password my-4">
+    <button type="button" class="btn btn-outline-dark w-100 d-flex justify-content-center align-items-center gap-3 py-3" data-bs-toggle="modal" data-bs-target="#updatePasswordModal">
+      <i class="fas fa-key fa-lg"></i>
+      Change Password
+    </button>
+  </div>
+
+  <!-- Logout Button -->
+  <div class="logout mb-5 my-3">
+    <form action="/logout" method="POST" style="display: inline">
+      <button
+        type="submit"
+        class="btn btn-outline-danger w-100 d-flex justify-content-center align-items-center gap-3 py-3"
+      >
+        <i class="fas fa-sign-out-alt fa-lg"></i>
+        Logout
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Update Password Modal -->
+<div class="modal fade" id="updatePasswordModal" tabindex="-1" aria-labelledby="updatePasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updatePasswordModalLabel">Update Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="updatePasswordForm">
+          <!-- Current Password -->
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+              <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#currentPassword">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <% if (user.isGoogleUser) { %>
+              <small id="dummyPasswordText" class="form-text text-muted">
+                Your current password is: <strong>123456</strong>
+              </small>
+            <% } %>
+          </div>
+          <!-- New Password -->
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+              <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#newPassword">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <!-- Confirm New Password -->
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+              <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#confirmPassword">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">Update Password</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="/js/userAccount.js"></script>

@@ -1,0 +1,67 @@
+<div class="container-fluid mt-3">
+  <div class="row">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/admin" class="text-light">Admin</a>
+        </li>
+        <li class="breadcrumb-item active text-info" aria-current="page">
+          Order Management
+        </li>
+      </ol>
+    </nav>
+    <div class="container">
+      <div class="table-container">
+        <h3 class="mb-4 text-light">Order Management</h3>
+        <div class="table-responsive">
+          <table class="table text-dark">
+            <thead>
+              <tr>
+                <th scope="col">Sl</th>
+                <th scope="col">User</th>
+                <th scope="col">Total Amount</th>
+                <th scope="col">Payment Method</th>
+                <th scope="col">Status</th>
+                <th class="text-center" scope="col">Date Ordered</th>
+                <th class="text-center" scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% orders.forEach((order, index) => { %>
+              <tr>
+                <th scope="row" class="text-center"><%= index + 1 %></th>
+                <td><%= order.user %></td>
+                <td>₹<%= order.finalTotal.toFixed(2) %></td>
+                <td><%= order.paymentMethod %></td>
+                <td>
+                  <select
+                    class="form-select"
+                    id="orderStatus_<%= order._id %>"
+                    name="status"
+                    onchange="updateOrderStatus('<%= order._id %>', this.value)"
+                  >
+                    <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                    <option value="Processed" <%= order.status === 'Processed' ? 'selected' : '' %>>Processed</option>
+                    <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                    <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                    <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                  </select>
+                </td>
+                <td class="text-center"><%= new Date(order.dateOrdered).toLocaleDateString() %></td>
+                <td>
+                  <form action="/admin/orders/view/<%= order._id %>" method="GET" style="display: inline">
+                    <button type="submit" class="btn btn-outline-light w-100">View</button>
+                  </form>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/orderManagement.js"></script>

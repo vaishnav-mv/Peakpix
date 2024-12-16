@@ -1,0 +1,255 @@
+<div class="container-fluid mt-3">
+  <div class="row">
+    <!-- Main content -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/admin" class="text-light">Admin</a>
+        </li>
+        <li class="breadcrumb-item active text-info" aria-current="page">
+          Product Management
+        </li>
+      </ol>
+    </nav>
+    <div class="container">
+      <div class="row">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="text-light">Product Management</h3>
+          <!-- Add New Product Button -->
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addProductModel"
+          >
+            Add New Product
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table text-light">
+            <thead>
+              <tr>
+                <th scope="col">Sl</th>
+                <th scope="col">Product Name</th>
+                <th scope="col">Category</th>
+                <th scope="col">Price</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% products.forEach((product, index) => { %>
+              <tr>
+                <th scope="row"><%= index + 1 %></th>
+                <td><%= product.name %></td>
+                <td><%= product.categoryDetails.name %></td>
+                <td>₹<%= product.price.toFixed(2) %></td>
+                <td>
+                  <% if (product.isOutOfStock) { %> Out of Stock <% } else { %>
+                  <%= product.stock %> <% } %>
+                </td>
+                <td>
+                  <div class="d-flex gap-2">
+                    <form
+                      action="/admin/products/edit/<%= product._id %>"
+                      method="GET"
+                      style="display: inline"
+                      class="w-100"
+                    >
+                      <button type="submit" class="btn btn-outline-light w-100">
+                        Edit
+                      </button>
+                    </form>
+                    <form
+                      action="/admin/products/toggle-status/<%= product._id %>"
+                      method="POST"
+                      style="display: inline"
+                      class="w-100"
+                    >
+                      <button
+                        type="submit"
+                        class="btn w-100 <%= product.isActive ? 'btn-dark' : 'btn-primary' %>"
+                      >
+                        <%= product.isActive ? "Unlist" : "List" %>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div
+  class="modal fade"
+  id="addProductModel"
+  tabindex="-1"
+  aria-labelledby="addProductModelLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header bg-dark">
+        <h5 class="modal-title" id="addProductModelLabel">Add New Product</h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form
+        action="/admin/products/add"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <div class="modal-body">
+          <div class="row">
+            <div class="mb-3">
+              <label for="productName" class="form-label">Product Name</label>
+              <input
+                type="text"
+                class="form-control custom-search-input"
+                id="productName"
+                name="name"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="productDescription" class="form-label"
+                >Description</label
+              >
+              <textarea
+                class="form-control custom-search-input"
+                id="productDescription"
+                name="description"
+              ></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="productPrice" class="form-label">Product Price</label>
+              <input
+                type="number"
+                class="form-control custom-search-input"
+                id="productPrice"
+                name="price"
+                required
+              />
+            </div>
+            <!-- Stock Input -->
+            <div class="col-md-6 mb-3">
+              <label for="productStock" class="form-label">Stock</label>
+              <input
+                type="number"
+                class="form-control custom-search-input"
+                id="productStock"
+                name="stock"
+                min="0"
+                max="100"
+                required
+              />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="productCategory" class="form-label">Category</label>
+            <select
+              class="form-select"
+              id="productCategory"
+              name="categoryId"
+              required
+            >
+              <option selected disabled value="">Choose a category</option>
+              <% categories.forEach(category => { %>
+              <option value="<%= category._id %>"><%= category.name %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- Main Image Upload -->
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label for="mainImage" class="form-label">Main Image</label>
+              <input
+                type="file"
+                class="form-control custom-search-input image-input"
+                id="mainImageInput"
+                name="mainImage"
+                accept="image/*"
+              />
+              <img
+                id="mainImagePreview"
+                src=""
+                alt="Main Image Preview"
+                class="img-fluid mt-2 preview-img"
+                style="display: none; width: 250px; height: auto"
+              />
+              <button class="btn btn-primary crop-button" style="display: none">
+                Crop Image
+              </button>
+            </div>
+
+            <!-- Support Images Upload -->
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Support Images 1</label>
+              <input
+                type="file"
+                class="form-control custom-search-input image-input"
+                id="supportImageInput1"
+                name="supportImages"
+                accept="image/*"
+              />
+              <img
+                id="supportImagePreview1"
+                src=""
+                alt="Support Image 1 Preview"
+                class="img-fluid mt-2 preview-img"
+                style="display: none; width: 250px; height: auto"
+              />
+              <button class="btn btn-primary crop-button" style="display: none">
+                Crop Image
+              </button>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Support Images 2</label>
+              <input
+                type="file"
+                class="form-control custom-search-input image-input"
+                id="supportImageInput2"
+                name="supportImages"
+                accept="image/*"
+              />
+              <img
+                id="supportImagePreview2"
+                src=""
+                alt="Support Image 2 Preview"
+                class="img-fluid mt-2 preview-img"
+                style="display: none; width: 250px; height: auto"
+              />
+              <button class="btn btn-primary crop-button" style="display: none">
+                Crop Image
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary">Add Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/js/addProduct.js"></script>
+

@@ -3,7 +3,7 @@ const Product = require("../models/products");
 const asyncHandler = require("express-async-handler");
 
 // Render Category Management Page
-const getCategory = asyncHandler(async (req, res) => {
+exports.getCategory = asyncHandler(async (req, res) => {
   const categories = await Category.find();
 
   if (!categories) {
@@ -20,7 +20,7 @@ const getCategory = asyncHandler(async (req, res) => {
 });
 
 // Controller to add a new category
-const addCategory = asyncHandler(async (req, res) => {
+exports.addCategory = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
 
   if (!name) {
@@ -42,7 +42,7 @@ const addCategory = asyncHandler(async (req, res) => {
 });
 
 // Unlist Category
-const toggleCategoryStatus = asyncHandler(async (req, res) => {
+exports.toggleCategoryStatus = asyncHandler(async (req, res) => {
   const categoryId = req.params.id;
 
   const category = await Category.findById(categoryId);
@@ -60,7 +60,7 @@ const toggleCategoryStatus = asyncHandler(async (req, res) => {
 });
 
 // Controller to delete a category
-const deleteCategory = asyncHandler(async (req, res) => {
+exports.deleteCategory = asyncHandler(async (req, res) => {
   const categoryId = req.params.id;
 
   // Find the category by ID
@@ -92,7 +92,7 @@ const deleteCategory = asyncHandler(async (req, res) => {
 });
 
 // Get edit category page
-const getCategoryDetail = asyncHandler(async (req, res) => {
+exports.getCategoryDetail = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // Fetch category details
@@ -113,7 +113,7 @@ const getCategoryDetail = asyncHandler(async (req, res) => {
 });
 
 // Update category details
-const updateCategory = asyncHandler(async (req, res) => {
+exports.updateCategory = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
   const id = req.params.id;
 
@@ -132,6 +132,3 @@ const updateCategory = asyncHandler(async (req, res) => {
     category: { name: category.name, description: category.description },
   });
 });
-
-
-module.exports ={getCategory,addCategory,toggleCategoryStatus,deleteCategory,getCategoryDetail,updateCategory}

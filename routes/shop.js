@@ -1,12 +1,23 @@
-const express = require('express')
-const shopRouter = express.Router()
+const express = require("express");
+const shopRouter = express.Router();
 const Product = require('../models/products')
-const {userAuth} = require('../middleware/userAuth')
+const {userAuth} = require("../middleware/userAuth");
+const {
+  getShop,
+  filterShop,
+  getCart,
+  updateCart,
+  addToCart,
+  deleteItemFromCart,
+  getProduct,
+  getStock,
+  getCartItemID,
+  addToWishlist,
+  getWishList,
+  removeWishlist,
+} = require("../controllers/userController");
 
-const {getShop,filterShop,getProduct,getStock,getCart,getCartItemID,addToCart,updateCart,deleteItemFromCart
-} = require('../controllers/userController')
-
-shopRouter.get('/',getShop)
+shopRouter.get("/", getShop);
 
 shopRouter.post("/", filterShop);
 
@@ -30,6 +41,7 @@ shopRouter.get('/search-products', async (req, res) => {
   }
 });
 
+
 shopRouter.get("/cart", userAuth, getCart);
 
 shopRouter.get("/cart-item-id", userAuth, getCartItemID);
@@ -40,7 +52,10 @@ shopRouter.get("/cart/:id", userAuth, addToCart);
 
 shopRouter.delete("/cart/:id", userAuth, deleteItemFromCart);
 
-
+// Wishlist 
+shopRouter.post('/wishlist/add/:id', userAuth, addToWishlist);
+shopRouter.get('/wishlist', userAuth, getWishList);
+shopRouter.get('/wishlist/remove/:id', userAuth, removeWishlist);
 
 // Get the stock of a product
 shopRouter.get("/stock", userAuth, getStock);
@@ -48,4 +63,4 @@ shopRouter.get("/stock", userAuth, getStock);
 shopRouter.get("/:id", getProduct);
 
 
-module.exports = shopRouter
+module.exports = shopRouter;

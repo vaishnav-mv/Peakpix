@@ -2,10 +2,15 @@ const User = require("../models/user");
 const Product = require("../models/products");
 const Address = require("../models/address");
 const Cart = require("../models/cart");
+const Offer = require("../models/offer")
+const Order = require("../models/order");
+const PDFDocument = require("pdfkit");
 const asyncHandler = require("express-async-handler");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
+const moment = require("moment");
+const { calculateDiscountedPrice } = require("../services/offerService");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -24,7 +29,7 @@ const addToCart = async (userId, productId, quantity) => {
 
   let cart = await Cart.findOne({ user: userId });
   if (!cart) {
-    cart = new Cart({ user: userId, items: [], shippingCharge: 50, total: 0 });
+    cart = new Cart({ user: userId, items: [], total: 0 });
   }
 
   const itemIndex = cart.items.findIndex((item) =>
@@ -107,7 +112,7 @@ exports.sendOtp = asyncHandler(async (req, res) => {
       res.render("layout", {
         title: "Verify OTP",
         header: "partials/header",
-        viewName: "user/verifyOtp",
+        viewName: "users/verifyOtp",
         error: null,
         isAdmin: false,
         activePage: "home",
@@ -179,7 +184,7 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
       res.render("layout", {
         title: "Verify OTP",
         header: "partials/header",
-        viewName: "user/verifyOtp",
+        viewName: "users/verifyOtp",
         error: "Invalid OTP",
         isAdmin: false,
         activePage: "home",
@@ -189,7 +194,7 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
     res.render("layout", {
       title: "Verify OTP",
       header: "partials/header",
-      viewName: "user/verifyOtp",
+      viewName: "users/verifyOtp",
       error: "OTP has expired. Please sign up again.",
       isAdmin: false,
       activePage: "home",
@@ -232,7 +237,7 @@ exports.logoutUser = asyncHandler(async (req, res) => {
 exports.getShop = asyncHandler(async (req, res) => {
   const category = "";
   const minPrice = 200;
-  const maxPrice = 10000;
+  const maxPrice = 5000;
   const sortBy = "";
   const products = await Product.aggregate([
     {
@@ -252,16 +257,62 @@ exports.getShop = asyncHandler(async (req, res) => {
         isActive: true,
       },
     },
-    
+    {
+      $lookup: {
+        from: "offers",
+        localField: "offerId", // Lookup for product-specific offer
+        foreignField: "_id",
+        as: "productOfferDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$productOfferDetails",
+        preserveNullAndEmptyArrays: true, // Include products without a product-specific offer
+      },
+    },
+    {
+      $lookup: {
+        from: "offers",
+        localField: "categoryDetails.offerId", // Lookup for category-specific offer
+        foreignField: "_id",
+        as: "categoryOfferDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$categoryOfferDetails",
+        preserveNullAndEmptyArrays: true, // Include categories without a category-wide offer
+      },
+    },
   ]);
+
+  const productsWithDiscounts = products.map((product) => {
+    // Get the offers (if they exist)
+    const productOffer = product.productOfferDetails || null;
+    const categoryOffer = product.categoryOfferDetails || null;
+
+    // Calculate the best discounted price
+    const discountedPrice = calculateDiscountedPrice(
+      product.price,
+      productOffer,
+      categoryOffer
+    );
+
+    // Return the product along with the calculated discounted price
+    return {
+      ...product,
+      discountedPrice, // Add the discounted price
+    };
+  });
 
   res.render("layout", {
     title: "Peakpix",
     header: req.session.user ? "partials/login_header" : "partials/header",
-    viewName: "user/shop",
+    viewName: "users/shop",
     activePage: "shop",
     isAdmin: false,
-    products,
+    products: productsWithDiscounts,
     category,
     minPrice,
     maxPrice,
@@ -342,7 +393,7 @@ exports.filterShop = asyncHandler(async (req, res) => {
   res.render("layout", {
     title: "Peakpix",
     header: req.session.user ? "partials/login_header" : "partials/header",
-    viewName: "user/shop",
+    viewName: "users/shop",
     activePage: "shop",
     isAdmin: false,
     products,
@@ -359,20 +410,60 @@ exports.getProduct = asyncHandler(async (req, res) => {
     return res.status(404).send("Product not found");
   }
 
+  const categoryOffer = product.categoryId.offerId
+    ? await Offer.findById(product.categoryId.offerId)
+    : null;
+
+  const productOffer = product.offerId
+    ? await Offer.findById(product.offerId)
+    : null;
+
+  const discountedPrice = calculateDiscountedPrice(
+    product.price,
+    productOffer,
+    categoryOffer
+  );
 
   const relatedProducts = await Product.find({
     categoryId: product.categoryId._id,
     _id: { $ne: product._id }
   }).populate('categoryId');
 
+
+  // Calculate discounted prices for related products
+  const relatedProductsWithDiscounts = await Promise.all(
+    relatedProducts.map(async (relatedProduct) => {
+      const relatedProductOffer = relatedProduct.offerId
+        ? await Offer.findById(relatedProduct.offerId)
+        : null;
+      const relatedCategoryOffer = relatedProduct.categoryId.offerId
+        ? await Offer.findById(relatedProduct.categoryId.offerId)
+        : null;
+
+      const discountedPrice = calculateDiscountedPrice(
+        relatedProduct.price,
+        relatedProductOffer,
+        relatedCategoryOffer
+      );
+
+      return {
+        ...relatedProduct.toObject(),
+        discountedPrice
+      };
+    })
+  );
+
   res.render("layout", {
     title: "Peakpix",
     header: req.session.user ? "partials/login_header" : "partials/header",
-    viewName: "user/product-detail",
+    viewName: "users/product-detail",
     activePage: "shop",
     isAdmin: false,
-    product,
-    relatedProducts,
+    product: {
+      ...product.toObject(),
+      discountedPrice 
+    },
+    relatedProducts: relatedProductsWithDiscounts,
   });
 });
 
@@ -405,7 +496,7 @@ exports.getUserAccount = asyncHandler(async (req, res) => {
   res.render("layout", {
     title: "My Peakpix Account",
     header: req.session.user ? "partials/login_header" : "partials/header",
-    viewName: "user/userAccount",
+    viewName: "users/userAccount",
     activePage: "Home",
     isAdmin: false,
     user,
@@ -500,7 +591,7 @@ exports.getAddresses = asyncHandler(async (req, res) => {
   res.render("layout", {
     title: "Manage Address",
     header: req.session.user ? "partials/login_header" : "partials/header",
-    viewName: "user/manageAddress",
+    viewName: "users/manageAddress",
     activePage: "Home",
     isAdmin: false,
     addresses,
@@ -578,7 +669,7 @@ exports.editAddressPage = asyncHandler(async (req, res) => {
   res.render("layout", {
     title: "Edit Address",
     header: req.session.user ? "partials/login_header" : "partials/header",
-    viewName: "user/editAddress",
+    viewName: "users/editAddress",
     activePage: "Home",
     isAdmin: false,
     address,
@@ -614,6 +705,24 @@ exports.deleteAddress = asyncHandler(async (req, res) => {
   res.status(200).send("Address deleted successfully");
 });
 
+exports.walletTransactions = asyncHandler(async (req, res) => {
+  const userId = req.session.user;
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  res.render("layout", {
+    title: "My Peakpix Account",
+    header: req.session.user ? "partials/login_header" : "partials/header",
+    viewName: "users/walletTransaction",
+    activePage: "Home",
+    isAdmin: false,
+    user,
+  });
+})
 
 exports.getCart = asyncHandler(async (req, res) => {
   const userId = req.session.user;
@@ -622,7 +731,7 @@ exports.getCart = asyncHandler(async (req, res) => {
   res.render("layout", {
     title: "Cart",
     header: req.session.user ? "partials/login_header" : "partials/header",
-    viewName: "user/cart",
+    viewName: "users/cart",
     activePage: "Shop",
     isAdmin: false,
     cart,
@@ -708,4 +817,193 @@ exports.deleteItemFromCart = asyncHandler(async (req, res) => {
   }
 });
 
+exports.getWishList = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.session.user;
+    
+    // Check if userId exists
+    if (!userId) {
+      return res.status(401).send('Unauthorized'); // or redirect to login
+    }
 
+    const user = await User.findById(userId).populate('wishlist');
+    
+    const wishlist = user.wishlist.map(product => ({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.images.main, // Adjust according to your schema
+      description: product.description,
+      price: product.price
+    }));
+
+    // Check if user is found
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    // Render the view with wishlist data
+    res.render("layout", {
+      title: "Wishlist",
+      header: req.session.user ? "partials/login_header" : "partials/header",
+      viewName: "users/wishlist",
+      activePage: "Shop",
+      isAdmin: false,
+      wishlist,
+    });
+  } catch (error) {
+    console.error('Error fetching wishlist:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+exports.addToWishlist = asyncHandler(async (req, res) => {
+  const productId = req.params.id;
+  const userId = req.session.user;
+
+  if (!userId || !productId) {
+    return res.status(400).json({ message: "User ID and Product ID are required" });
+  }
+
+  try {
+    // Check if the product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Add product to the user's wishlist
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.wishlist.includes(productId)) {
+      return res.status(400).json({ message: "Product is already in the wishlist" });
+    }
+
+    // Update the user's wishlist by adding the productId
+    await User.updateOne(
+      { _id: userId },
+      { $push: { wishlist: productId } }
+    );
+
+    res.status(200).json({ message: "Product added to wishlist", wishlist: user.wishlist });
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Server error", error });
+  }
+})
+
+exports.removeWishlist = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.session.user;
+    const productId = req.params.id; 
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { wishlist: productId } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Product removed from wishlist successfully'
+    });
+  } catch (error) {
+    console.error('Error removing product from wishlist:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while removing the product from wishlist',
+      error: error.message
+    });
+  }
+})
+
+exports.downloadInvoice = async (req, res) => {
+  const orderId = req.params.id;
+
+  try {
+      const order = await Order.findById(orderId).populate({ 
+          path: "orderItems", 
+          populate: "product" 
+      });
+      
+      if (!order) {
+          return res.status(404).send("Order not found");
+      }
+
+      // Create a PDF document
+      const doc = new PDFDocument({ margin: 50 });
+      res.setHeader("Content-disposition", `attachment; filename=invoice-${orderId}.pdf`);
+      res.setHeader("Content-type", "application/pdf");
+
+      // Pipe the PDF into the response
+      doc.pipe(res);
+
+      // Header
+      doc.fillColor("#5a31a8").fontSize(26).text("INVOICE", { align: "center" });
+      doc.moveDown();
+      doc.fillColor("#000").fontSize(14).text(`Invoice for Order ID: ${orderId}`, { align: "center" });
+      doc.moveDown(2);
+
+      // Order details
+      doc.fillColor("#333").fontSize(12).text(`Order Date: ${moment(order.dateOrdered).format("MMMM Do, YYYY")}`);
+      doc.text(`Payment Method: ${order.paymentMethod}`);
+      doc.text(`Total Amount: ${order.totalAmount}`);
+      doc.text(`Discount Applied: ${order.discountApplied}`);
+      doc.text(`Final Total: ${order.finalTotal}`);
+      doc.moveDown();
+
+      // Shipping Address
+      doc.fillColor("#5a31a8").fontSize(14).text("Shipping Address:", { underline: true });
+      doc.fillColor("#000").fontSize(12).text(`Name: ${order.name}`);
+      doc.text(`Mobile: ${order.mobile}`);
+      if (order.alternateMobile) {
+          doc.text(`Alternate Mobile: ${order.alternateMobile}`);
+      }
+      doc.text(`Location: ${order.location}, ${order.city}, ${order.state} - ${order.zip}`);
+      doc.moveDown();
+
+      // Ordered Items Header
+      doc.fillColor("#5a31a8").fontSize(14).text("Ordered Items:", { underline: true });
+      doc.moveDown();
+
+      // Table Header
+      const tableTop = doc.y;
+      doc.fillColor("#5a31a8").fontSize(12).text("Product", 50, tableTop);
+      doc.text("Quantity", 300, tableTop);
+      doc.text("Price", 450, tableTop);
+      doc.moveDown(2);
+
+      // Table Rows
+      doc.fillColor("#000").fontSize(12);
+      const rowHeight = 20; // Define a fixed height for the rows
+      order.orderItems.forEach(item => {
+          const productDetails = item.product.name;
+          const quantity = item.quantity;
+          const price = item.product.price;
+
+          // Move to a new y position for each row
+          doc.text(productDetails, 50, doc.y); // Product name at x=50
+          doc.text(quantity.toString(), 300, doc.y); // Quantity at x=300
+          doc.text(`${price}`, 450, doc.y); // Price at x=450
+
+          // Move the y position down for the next row
+          doc.moveDown(rowHeight / 14); // Adjust the movement as necessary for spacing
+      });
+
+
+      // Finalize the PDF and end the stream
+      doc.moveDown(10);
+      doc.fillColor("#5a31a8").fontSize(12).text("Thank you for your order!", { align: "center" });
+      doc.end();
+  } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error");
+  }
+};

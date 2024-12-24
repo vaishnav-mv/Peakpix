@@ -24,7 +24,276 @@
             Add New Offer
           </button>
         </div>
+        <!-- Check if there are offers to display -->
+        <% if (offers.length === 0) { %>
+          <div class="alert alert-info text-center" role="alert">No offers found.</div>
+        <% } else { %>
+          <!-- Offer Table -->
+          <div class="table-responsive">
+            <table class="table text-center">
+              <thead class="table-dark">
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Offer Type</th>
+                  <th scope="col">Applicable To</th>
+                  <th scope="col">Discount</th>
+                  <th scope="col">Max Discount</th>
+                  <th scope="col">Valid From</th>
+                  <th scope="col">Valid Until</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Loop through offers data -->
+                <% offers.forEach((offer, index) => { %>
+                  <tr data-offer-id="<%= offer._id %>">
+                    <th scope="row"><%= index + 1 %></th>
+                    <td><%= offer.type %></td>
+                    <td>
+                      <% if (offer.type === 'product') { %>
+                        <%= offer.product.name %>
+                      <% } else if (offer.type === 'category') { %>
+                        <%= offer.category.name %>
+                      <% } else { %>
+                        Referral
+                      <% } %>
+                    </td>
+                    <td>
+                      <%= offer.discountType === 'percentage' ? `${offer.discountValue}%` : `₹${offer.discountValue}` %>
+                    </td>
+                    <td>
+                      <%= offer.maxDiscountAmount ? `₹${offer.maxDiscountAmount}` : '-' %>
+                    </td>
+                    <td><%= new Date(offer.validFrom).toLocaleDateString() %></td>
+                    <td><%= new Date(offer.validUntil).toLocaleDateString() %></td>
+                    <td>
+                      <span 
+                        id="statusDisplay<%= offer._id %>" 
+                        class="badge w-100 py-2 <%= offer.status === 'active' ? 'bg-success' : 'bg-danger' %>" 
+                        style="cursor: pointer;" 
+                        onclick="toggleOfferStatus('<%= offer._id %>')">
+                        <%= offer.status %>
+                      </span>
+                    </td>
+                    <td class="d-flex gap-2">
+                      <button class="btn btn-outline-light w-100" data-bs-toggle="modal" data-bs-target="#editOfferModal<%= offer._id %>">Edit</button>
+                      <button class="btn btn-outline-danger w-100" onclick="deleteOffer('<%= offer._id %>')">Delete</button>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Bootstrap Modal for Adding Offer -->
+<div
+  class="modal fade"
+  id="addOfferModal"
+  tabindex="-1"
+  aria-labelledby="addOfferModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header bg-dark text-light">
+        <h5 class="modal-title" id="addOfferModalLabel">Add New Offer</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <!-- Add Offer Form -->
+        <form>
+          <div class="mb-3">
+            <label for="offerType" class="form-label">Offer Type</label>
+            <select class="form-select" id="offerType" required>
+              <option value="" selected>Select Offer Type</option>
+              <option value="product">Product</option>
+              <option value="category">Category</option>
+              <option value="referral">Referral</option>
+            </select>
+          </div>
+
+          <div id="productCategorySection" class="mb-3">
+            <!-- This section will be dynamically updated based on the offer type -->
+            <label for="productOrCategory" class="form-label"
+              >Select Product/Category</label
+            >
+            <select class="form-select" id="productOrCategory" required>
+              <option value="" selected>Select Product or Category</option>
+              <!-- Products or Categories options will go here -->
+            </select>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="discountType" class="form-label">Discount Type</label>
+              <select class="form-select" id="discountType" required>
+                <option value="" selected>Select Discount Type</option>
+                <option value="percentage">Percentage</option>
+                <option value="fixed">Fixed Amount</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="discountValue" class="form-label"
+                >Discount Value</label
+              >
+              <input
+                type="number"
+                class="form-control custom-search-input"
+                id="discountValue"
+                placeholder="Enter Discount Value"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="maxDiscountAmount" class="form-label"
+                >Max Discount Amount (Optional)</label
+              >
+              <input
+                type="number"
+                class="form-control custom-search-input"
+                id="maxDiscountAmount"
+                placeholder="Enter Max Discount Amount"
+              />
+            </div>
+            <div class="col-md-6">
+              <label for="minCartValue" class="form-label"
+                >Minimum Cart Value (Optional)</label
+              >
+              <input
+                type="number"
+                class="form-control custom-search-input"
+                id="minCartValue"
+                placeholder="Enter Minimum Cart Value"
+              />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="validFrom" class="form-label">Valid From</label>
+              <input type="date" class="form-control custom-search-input" id="validFrom" required />
+            </div>
+            <div class="col-md-6">
+              <label for="validUntil" class="form-label">Valid Until</label>
+              <input
+                type="date"
+                class="form-control custom-search-input"
+                id="validUntil"
+                required
+              />
+            </div>
+          </div>
+
+          <div id="referralSection" class="row mb-3 d-none">
+            <div class="col-md-6">
+              <label for="referrerBonus" class="form-label"
+                >Referrer Bonus</label
+              >
+              <input
+                type="number"
+                class="form-control custom-search-input"
+                id="referrerBonus"
+                placeholder="Enter Referrer Bonus"
+              />
+            </div>
+            <div class="col-md-6">
+              <label for="refereeBonus" class="form-label">Referee Bonus</label>
+              <input
+                type="number"
+                class="form-control custom-search-input"
+                id="refereeBonus"
+                placeholder="Enter Referee Bonus"
+              />
+            </div>
+          </div>
+          <button type="submit" onclick="addOffer()" class="btn btn-primary">Add Offer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Offer Modals (one for each offer) -->
+<% offers.forEach((offer) => { %>
+  <div class="modal fade" id="editOfferModal<%= offer._id %>" tabindex="-1" aria-labelledby="editOfferModalLabel<%= offer._id %>" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header bg-dark text-light">
+          <h5 class="modal-title" id="editOfferModalLabel<%= offer._id %>">Edit Offer</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form class="edit-offer-form" data-offer-id="<%= offer._id %>">
+            <div class="mb-3">
+              <label for="offerType" class="form-label">Offer Type</label>
+              <select class="form-select" id="offerType<%= offer._id %>" value="<%= offer.type %>">
+                <option value="product" <%= offer.type === 'product' ? 'selected' : '' %>>Product</option>
+                <option value="category" <%= offer.type === 'category' ? 'selected' : '' %>>Category</option>
+                <option value="referral" <%= offer.type === 'referral' ? 'selected' : '' %>>Referral</option>
+              </select>
+            </div>
+
+            <% if (offer.type === 'category' && offer.category && offer.category.name) { %>
+              <div class="mb-3">
+                <label for="categoryName<%= offer._id %>" class="form-label">Category Name</label>
+                <input type="text" class="form-control custom-search-input" id="categoryName<%= offer._id %>" value="<%= offer.category.name %>" readonly>
+              </div>
+            <% } else if (offer.type === 'product' && offer.product && offer.product.name) { %>
+              <div class="mb-3">
+                <label for="productName<%= offer._id %>" class="form-label">Product Name</label>
+                <input type="text" class="form-control custom-search-input" id="productName<%= offer._id %>" value="<%= offer.product.name %>" readonly>
+              </div>
+            <% } %>
+
+            <div class="mb-3">
+              <label for="discountType<%= offer._id %>" class="form-label">Discount Type</label>
+              <select class="form-select" id="discountType<%= offer._id %>" value="<%= offer.discountType %>">
+                <option value="percentage" <%= offer.discountType === 'percentage' ? 'selected' : '' %>>Percentage</option>
+                <option value="fixed" <%= offer.discountType === 'fixed' ? 'selected' : '' %>>Fixed Amount</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="discountValue<%= offer._id %>" class="form-label">Discount Value</label>
+              <input type="number" class="form-control custom-search-input" id="discountValue<%= offer._id %>" value="<%= offer.discountValue %>">
+            </div>
+            <div class="mb-3">
+              <label for="maxDiscount<%= offer._id %>" class="form-label">Max Discount Amount</label>
+              <input type="number" class="form-control custom-search-input" id="maxDiscount<%= offer._id %>" value="<%= offer.maxDiscountAmount %>">
+            </div>
+            <div class="mb-3">
+              <label for="validFrom<%= offer._id %>" class="form-label">Valid From</label>
+              <input type="date" class="form-control custom-search-input" id="validFrom<%= offer._id %>" value="<%= new Date(offer.validFrom).toISOString().split('T')[0] %>">
+            </div>
+            <div class="mb-3">
+              <label for="validUntil<%= offer._id %>" class="form-label">Valid Until</label>
+              <input type="date" class="form-control custom-search-input" id="validUntil<%= offer._id %>" value="<%= new Date(offer.validUntil).toISOString().split('T')[0] %>">
+            </div>
+            <div class="mb-3">
+              <label for="minCartValue<%= offer._id %>" class="form-label">Minimum Cart Value</label>
+              <input type="number" class="form-control custom-search-input" id="minCartValue<%= offer._id %>" value="<%= offer.minCartValue %>">
+            </div>
+            <button type="submit" class="btn btn-primary">Update Offer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+<% }) %>
+
+
+<script src="/js/offerManagement.js"></script>

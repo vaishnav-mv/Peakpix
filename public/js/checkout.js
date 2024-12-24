@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Address selection functionality
   setupAddressSelection();
-
-  setupCouponApplication();
 });
 
 // Function to handle address selection
@@ -81,118 +79,9 @@ function clearAddressForm() {
   document.getElementById("landmark").value = "";
   document.getElementById("zip").value = "";
 }
-
-const couponBtn = document.getElementById("applyCouponBtn");
-const couponCodeInput = document.getElementById("couponCode");
-const cartId = couponCode.getAttribute("data-cartId");
-const applyCouponDiv = document.getElementById("applyCouponDiv");
-const appliedCouponDiv = document.getElementById("appliedCouponDiv");
-const appliedCouponCodeSpan = document.getElementById("appliedCouponCode");
-const removeCouponBtn = document.getElementById("removeCouponBtn");
 const grandTotal = document.getElementById('grandTotal');
 
-couponBtn.addEventListener("click", () => {
-  let Toast = Swal.mixin({
-    toast: true,
-    position: "top",
-    showConfirmButton: false,
-    timer: 2500,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.onmouseenter = Swal.stopTimer;
-      toast.onmouseleave = Swal.resumeTimer;
-    },
-  });
-  const couponCode = couponCodeInput.value.trim();
-  if (couponCode) {
-    const data = {
-      couponCode,
-      cartId,
-    };
-    fetch("/checkout/apply-coupons", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.success) {
-          Toast.fire({
-            icon: "success",
-            title: result.message,
-          });
-          appliedCouponCodeSpan.querySelector("strong").textContent =
-            couponCode;
-          applyCouponDiv.classList.add("d-none");
-          appliedCouponDiv.classList.remove("d-none");
-          grandTotal.textContent = `₹${result.finalTotal.toFixed(2)}`;
-        } else {
-          Toast.fire({
-            icon: "error",
-            title: result.message,
-          });
-          console.error("Failed to apply coupon:", couponCode, result.message);
-        }
-      })
-      .catch((error) => {
-        Toast.fire({
-          icon: "error",
-          title: `Error: ${error}`,
-        });
-        console.error("Error:", error);
-      });
-  } else {
-    Toast.fire({
-      icon: "warning",
-      title: "Please enter a coupon code.",
-    });
-    console.log("Please enter a coupon code.");
-  }
-});
 
-removeCouponBtn.addEventListener("click", async () => {
-  applyCouponDiv.classList.remove("d-none");
-  appliedCouponDiv.classList.add("d-none");
-  couponCodeInput.value = "";
-
-  let Toast = Swal.mixin({
-    toast: true,
-    position: "top",
-    showConfirmButton: false,
-    timer: 2500,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.onmouseenter = Swal.stopTimer;
-      toast.onmouseleave = Swal.resumeTimer;
-    },
-  });
-
-  fetch(`/checkout/remove-coupon/${cartId}`)
-    .then((response) => response.json())
-    .then((result) => {
-      if (result.success) {
-        Toast.fire({
-          icon: "success",
-          title: result.message,
-        });
-        grandTotal.textContent = `₹${result.finalTotal.toFixed(2)}`; 
-      } else {
-        Toast.fire({
-          icon: "error",
-          title: result.message,
-        });
-      }
-    })
-    .catch((error) => {
-      Toast.fire({
-        icon: "error",
-        title: `Error: ${error}`,
-      });
-      console.error("Error:", error);
-    });
-});
 
 document.getElementById("checkoutForm").addEventListener("submit", async function (e) {
   e.preventDefault();

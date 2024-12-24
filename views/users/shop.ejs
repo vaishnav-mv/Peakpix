@@ -30,7 +30,7 @@
               <div id="price-slider"></div>
               <div class="d-flex justify-content-between mt-2">
                 <span id="minPriceValue">₹50</span>
-                <span id="maxPriceValue">₹6000</span>
+                <span id="maxPriceValue">₹200</span>
               </div>
               <input type="hidden" id="minPrice" name="minPrice" value="50">
               <input type="hidden" id="maxPrice" name="maxPrice" value="200">
@@ -145,10 +145,10 @@
                   Add to Cart
                 </button>
                 <button
-                  class="btn btn-outline-dark-purple w-100>"
-            
+                  class="btn btn-outline-dark-purple w-100 <% if (product.isOutOfStock) { %> disabled <% } %>"
+                  onclick="addToWishList('<%= product._id %>')"
                 >
-                  <i class="fas fa-heart"></i> 
+                  <i class="fas fa-heart"></i> Wishlist
                 </button>
               </div>
             </div>
@@ -179,4 +179,5 @@
 </style>
 
 <script src="/js/cart.js"></script>
+<script src="/js/wishlist.js"></script>
 <script src="/js/shop.js"></script>

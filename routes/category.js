@@ -1,6 +1,6 @@
 const express = require("express");
 const categoryRouter = express.Router();
-const adminAuth = require("../middleware/adminAuth")
+const adminAuth = require("../middleware/adminAuth");
 const {
   getCategory,
   toggleCategoryStatus,
@@ -24,6 +24,4 @@ categoryRouter.post("/delete/:id", adminAuth, deleteCategory);
 // Update a category
 categoryRouter.post('/edit/:id', adminAuth, updateCategory);
 
-
-
-module.exports=categoryRouter
+module.exports = categoryRouter;

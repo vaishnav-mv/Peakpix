@@ -39,10 +39,10 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
       const {order, orderData} = await response.json();
 
       var options = {
-        key: "rzp_test_QYQyRI9jHWn6Or", // Enter the Key ID generated from the Dashboard
+        key: "rzp_test_QrPtjXNHHRSmCn", // Enter the Key ID generated from the Dashboard
         amount,
         currency,
-        name: "Audify", //your business name
+        name: "Peakpix", //your business name
         description: "Test Transaction",
         order_id: order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
         handler: async function (response) {

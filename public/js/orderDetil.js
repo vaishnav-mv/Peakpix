@@ -22,7 +22,7 @@ async function cancelOrder(orderid) {
     if (response.ok) {
       await Toast.fire({
         icon: "success",
-        title: "Order Cancelled!",
+        title: "Order Cancelled! Refunded to wallet",
       });
       window.location.reload();
     } else {
@@ -39,4 +39,8 @@ async function cancelOrder(orderid) {
       title: 'An error occurred. Please try again.',
     });
   }
+}
+function downloadInvoice(orderId) {
+  const invoiceUrl = `/account/order/${orderId}/invoice`;
+  window.location.href = invoiceUrl;
 }

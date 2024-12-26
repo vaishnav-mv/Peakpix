@@ -108,4 +108,37 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchSalesDataAndRenderChart(selectedFilter);
 });
 
+fetch("/admin/best-sellers")
+  .then((response) => response.json())
+  .then((data) => {
+    const { topProducts, topCategories } = data;
+
+    // Populate best selling products
+    const productsContainer = document.getElementById("bestSellingProducts");
+    topProducts.forEach((product, index) => {
+      const productRow = `
+          <tr>
+            <td>#${index + 1}</td>
+            <td><img src="${product.image}" class="img-fluid" style="width: 40px; height: 40px;" alt="${product.name}" /></td>
+            <td>${product.name}</td>
+            <td>${product.popularity}</td>
+          </tr>`;
+        productsContainer.innerHTML += productRow;
+    });
+
+    // Populate best selling categories
+    const categoriesContainer = document.getElementById(
+      "bestSellingCategories"
+    );
+    topCategories.forEach((category, index) => {
+      const categoryRow = `
+        <tr>
+          <td>#${index + 1}</td>
+          <td>${category.name}</td>
+          <td>${category.popularity}</td>
+        </tr>`;
+      categoriesContainer.innerHTML += categoryRow;
+    });
+  })
+  .catch((error) => console.error("Error fetching best sellers:", error));
 

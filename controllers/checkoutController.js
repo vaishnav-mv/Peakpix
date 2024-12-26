@@ -150,10 +150,10 @@ exports.razorPay = asyncHandler(async (req, res) => {
     });
 
     const options = req.body;
-    const order = await razorpay.orders.create(options);
+    const order = await razorpay.orders.create(options); //calls razorpay api to create an order with the provided options
 
     if (!order) {
-      return res.status(500).send("Error");
+      return res.status(500).send("Error"); // if order creation fails
     }
 
     res.status(200).json({order, orderData});
@@ -170,6 +170,15 @@ exports.confirmPayment = asyncHandler(async (req, res) => {
   const order = await Order.findById(orderId)
   if (!order) {
     return res.status(404).json({success: false, message: "Order not found!"});
+  }
+
+  if (paymentMethod === 'COD') {
+    if (order.finalTotal > 1000) {
+      return res.status(400).json({
+        success: false,
+        message: "Cash on Delivery is not available for orders above ₹1000."
+      });
+    }
   }
 
   order.paymentMethod = paymentMethod;
@@ -266,8 +275,8 @@ exports.placeOrder = asyncHandler(async (req, res) => {
     }
 
     const orderItems = await Promise.all(
-      cart.items.map(async (item) => {
-        const orderItem = new OrderItem({
+      cart.items.map(async (item) => {         //Maps through the cart items to create order items.
+        const orderItem = new OrderItem({      //For each item, it creates a new OrderItem
           quantity: item.quantity,
           product: item.productId,
         });
@@ -314,7 +323,7 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 
     const placedOrder = await order.save();
 
-    await Cart.deleteOne({ user: userId });
+    await Cart.deleteOne({ user: userId });   //Deletes the user's cart after placing the order.
 
     res.status(201).json({
       success: true,

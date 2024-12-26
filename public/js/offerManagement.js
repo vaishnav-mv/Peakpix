@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const productCategorySection = document.getElementById(
     "productCategorySection"
   );
-  const referralSection = document.getElementById("referralSection");
+
   const productOrCategorySelect = document.getElementById("productOrCategory");
 
   function fetchOptions(offerType) {
@@ -38,13 +38,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   offerTypeSelect.addEventListener("change", function () {
     const offerType = offerTypeSelect.value;
-
-    // Show or hide referral section based on offer type
-    if (offerType === "referral") {
-      referralSection.classList.remove("d-none");
-    } else {
-      referralSection.classList.add("d-none");
-    }
 
     // Show product/category section and update options
     if (offerType === "product" || offerType === "category") {
@@ -92,14 +85,7 @@ function addOffer() {
   const minCartValue = document.getElementById("minCartValue").value || null;
   const validFrom = document.getElementById("validFrom").value;
   const validUntil = document.getElementById("validUntil").value;
-  const referrerBonus =
-    offerType === "referral"
-      ? document.getElementById("referrerBonus").value || null
-      : null;
-  const refereeBonus =
-    offerType === "referral"
-      ? document.getElementById("refereeBonus").value || null
-      : null;
+
 
   const offerData = {
     type: offerType,
@@ -111,10 +97,6 @@ function addOffer() {
     minCartValue,
     validFrom,
     validUntil,
-    referralBonus:
-      offerType === "referral"
-        ? { referrer: referrerBonus, referee: refereeBonus }
-        : undefined,
   };
 
   fetch("/admin/offer", {

@@ -23,6 +23,7 @@ const {
   deleteCoupon,
   getSalesReport,
   getSalesData,
+  getBestSellers,
   toggleCouponStatus,
   toggleOfferStatus,
 } = require("../controllers/adminController");
@@ -35,6 +36,8 @@ adminRouter.get("/", adminAuth, getAdminHome);
 adminRouter.post("/sales-report", adminAuth, getSalesReport);
 
 adminRouter.get("/sales-data", adminAuth, getSalesData);
+
+adminRouter.get("/best-sellers", getBestSellers);
 
 // Admin Authentication Routes
 // Admin Login Route

@@ -126,14 +126,12 @@ exports.updateOrderStatus = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const newStatus = req.body.status;
   try {
-    // Check if the order exists
     const order = await Order.findById(orderId);
     if (!order) {
       console.log("Order not found");
       return res.status(404).json({ success:false, message: "Order not found" });
     }
 
-    // Log current status and new status
     console.log(`Current Status: ${order.status}, New Status: ${newStatus}`);
 
     // 1. Admin should not be able to update cancelled orders
@@ -213,8 +211,8 @@ exports.addCoupon = asyncHandler(async (req, res) => {
       discountValue,
       maxDiscountValue,
       minCartValue,
-      validFrom, // Changed from expirationDate
-      validUntil, // New field for expiration date
+      validFrom, 
+      validUntil, 
       usageLimit,
       isActive,
     } = req.body;
@@ -226,7 +224,7 @@ exports.addCoupon = asyncHandler(async (req, res) => {
         .json({ success: false, message: "Missing required fields" });
     }
 
-    const existingCoupon = await Coupon.findOne({ code });
+    const existingCoupon = await Coupon.findOne({ code }); //checks if a coupon with same code already exist in the database
 
     if (existingCoupon) {
       return res.status(400).json({
@@ -373,7 +371,7 @@ exports.addOffer = asyncHandler(async (req, res) => {
       minCartValue,
       validFrom,
       validUntil,
-      referralBonus,
+      
     } = req.body;
 
     // Validate required fields
@@ -394,7 +392,6 @@ exports.addOffer = asyncHandler(async (req, res) => {
       minCartValue,
       validFrom,
       validUntil,
-      referralBonus: type === "referral" ? referralBonus : undefined,
     });
 
     // Save the offer to the database
@@ -403,7 +400,7 @@ exports.addOffer = asyncHandler(async (req, res) => {
     if (type === "product" && product) {
       await Product.findByIdAndUpdate(product, {
         $set: { offerId: newOffer._id },
-      });
+      }); //updates the product to associate it with the new offer
     }
     if (type === "category" && category) {
       await Category.findByIdAndUpdate(category, {
@@ -787,5 +784,54 @@ exports.getSalesData = async (req, res) => {
   } catch (error) {
     console.error("Error fetching sales data:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getBestSellers = async (req, res) => {
+  try {
+    // Fetch top 10 best-selling products
+    const topProducts = await Product.find({ isActive: true })
+      .sort({ popularity: -1 })
+      .limit(10)
+      .select('name images.main popularity');
+
+    // Fetch top 3 best-selling categories
+    const topCategories = await Category.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "categoryId",
+          as: "products",
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          popularity: { $sum: "$products.popularity" },
+        },
+      },
+      {
+        $sort: { popularity: -1 },
+      },
+      {
+        $limit: 3,
+      },
+    ]);
+
+    res.status(200).json({
+      topProducts: topProducts.map(product => ({
+        name: product.name,
+        image: product.images.main,
+        popularity: product.popularity,
+      })),
+      topCategories: topCategories.map(category => ({
+        name: category.name,
+        popularity: category.popularity || 0,
+      })),
+    });
+  } catch (error) {
+    console.error('Error fetching best sellers:', error);
+    res.status(500).json({ error: 'Failed to fetch best sellers' });
   }
 };

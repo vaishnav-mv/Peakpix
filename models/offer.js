@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const offerSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['product', 'category', 'referral'],
+    enum: ['product', 'category'],
     required: true
   },
   product: { 
@@ -40,10 +40,6 @@ const offerSchema = new mongoose.Schema({
   minCartValue: {
     type: Number,
     default: 0
-  },
-  referralBonus: {
-    referrer: { type: Number }, // e.g., ₹100 for referrer
-    referee: { type: Number }   // e.g., ₹50 for referee
   },
   status: {
     type: String,

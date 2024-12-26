@@ -42,8 +42,8 @@ document.querySelector("#addCouponform").addEventListener("submit", async functi
     discountValue: parseFloat(discountValue),
     maxDiscountValue: maxDiscountValue ? parseFloat(maxDiscountValue) : 0,
     minCartValue: minCartValue ? parseFloat(minCartValue) : 0,
-    validFrom, // New field for start date
-    validUntil, // Updated field for expiration date
+    validFrom, 
+    validUntil, 
     usageLimit: parseInt(usageLimit, 10),
     isActive,
 };

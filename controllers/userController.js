@@ -835,7 +835,7 @@ exports.getWishList = asyncHandler(async (req, res) => {
       image: product.images.main, // Adjust according to your schema
       description: product.description,
       price: product.price
-    }));
+    }));//maps over wishlist array to create a new array of products with specific fields prepares the wishlist data for rendering.
 
     // Check if user is found
     if (!user) {

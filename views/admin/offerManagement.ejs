@@ -55,8 +55,6 @@
                         <%= offer.product.name %>
                       <% } else if (offer.type === 'category') { %>
                         <%= offer.category.name %>
-                      <% } else { %>
-                        Referral
                       <% } %>
                     </td>
                     <td>
@@ -119,7 +117,6 @@
               <option value="" selected>Select Offer Type</option>
               <option value="product">Product</option>
               <option value="category">Category</option>
-              <option value="referral">Referral</option>
             </select>
           </div>
 
@@ -197,29 +194,6 @@
               />
             </div>
           </div>
-
-          <div id="referralSection" class="row mb-3 d-none">
-            <div class="col-md-6">
-              <label for="referrerBonus" class="form-label"
-                >Referrer Bonus</label
-              >
-              <input
-                type="number"
-                class="form-control custom-search-input"
-                id="referrerBonus"
-                placeholder="Enter Referrer Bonus"
-              />
-            </div>
-            <div class="col-md-6">
-              <label for="refereeBonus" class="form-label">Referee Bonus</label>
-              <input
-                type="number"
-                class="form-control custom-search-input"
-                id="refereeBonus"
-                placeholder="Enter Referee Bonus"
-              />
-            </div>
-          </div>
           <button type="submit" onclick="addOffer()" class="btn btn-primary">Add Offer</button>
         </form>
       </div>
@@ -243,7 +217,6 @@
               <select class="form-select" id="offerType<%= offer._id %>" value="<%= offer.type %>">
                 <option value="product" <%= offer.type === 'product' ? 'selected' : '' %>>Product</option>
                 <option value="category" <%= offer.type === 'category' ? 'selected' : '' %>>Category</option>
-                <option value="referral" <%= offer.type === 'referral' ? 'selected' : '' %>>Referral</option>
               </select>
             </div>
 

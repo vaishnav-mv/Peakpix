@@ -40,7 +40,7 @@
             <tbody>
               <% products.forEach((product, index) => { %>
               <tr>
-                <th scope="row"><%= index + 1 %></th>
+                <th scope="row"><%= index + 1 + (currentPage - 1) * 10 %></th>
                 <td><%= product.name %></td>
                 <td><%= product.categoryDetails.name %></td>
                 <td>₹<%= product.price.toFixed(2) %></td>
@@ -50,26 +50,11 @@
                 </td>
                 <td>
                   <div class="d-flex gap-2">
-                    <form
-                      action="/admin/products/edit/<%= product._id %>"
-                      method="GET"
-                      style="display: inline"
-                      class="w-100"
-                    >
-                      <button type="submit" class="btn btn-outline-light w-100">
-                        Edit
-                      </button>
+                    <form action="/admin/products/edit/<%= product._id %>" method="GET" style="display: inline" class="w-100">
+                      <button type="submit" class="btn btn-outline-light w-100">Edit</button>
                     </form>
-                    <form
-                      action="/admin/products/toggle-status/<%= product._id %>"
-                      method="POST"
-                      style="display: inline"
-                      class="w-100"
-                    >
-                      <button
-                        type="submit"
-                        class="btn w-100 <%= product.isActive ? 'btn-dark' : 'btn-primary' %>"
-                      >
+                    <form action="/admin/products/toggle-status/<%= product._id %>" method="POST" style="display: inline" class="w-100">
+                      <button type="submit" class="btn w-100 <%= product.isActive ? 'btn-dark' : 'btn-primary' %>">
                         <%= product.isActive ? "Unlist" : "List" %>
                       </button>
                     </form>
@@ -80,6 +65,17 @@
             </tbody>
           </table>
         </div>
+        <!-- Pagination Controls -->
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                <a class="page-link" href="/admin/products?page=<%= i %>"><%= i %></a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+        <!-- End of Pagination Controls -->
       </div>
     </div>
   </div>

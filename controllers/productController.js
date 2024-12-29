@@ -5,6 +5,10 @@ const cloudinary = require("../config/cloudinary");
 
 // Render Product Management Page
 exports.getProducts = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1; // Get the current page from query, default to 1
+  const limit = 10; // Set the number of products per page
+  const skip = (page - 1) * limit; // Calculate how many products to skip
+
   const categories = await Category.find();
   const products = await Product.aggregate([
     {
@@ -18,7 +22,10 @@ exports.getProducts = asyncHandler(async (req, res) => {
     {
       $unwind: "$categoryDetails",
     },
-  ]);
+  ]).skip(skip).limit(limit); // Fetch products with pagination
+
+  const totalProducts = await Product.countDocuments(); // Get total number of products
+  const totalPages = Math.ceil(totalProducts / limit); // Calculate total pages
 
   res.render("layout", {
     title: "Product Management",
@@ -27,6 +34,8 @@ exports.getProducts = asyncHandler(async (req, res) => {
     isAdmin: true,
     products,
     categories,
+    currentPage: page, // Pass current page to the view
+    totalPages: totalPages, // Pass total pages to the view
   });
 });
 

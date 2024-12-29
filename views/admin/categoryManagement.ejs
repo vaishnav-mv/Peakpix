@@ -37,39 +37,36 @@
             <tbody id="categoryList">
               <% categories.forEach((category, index) => { %>
               <tr>
-                <th scope="row"><%= index + 1 %></th>
+                <th scope="row"><%= index + 1 + (currentPage - 1) * 10 %></th>
                 <td><%= category.name %></td>
                 <td><%= category.description %></td>
                 <td>
                   <div class="d-flex justify-content-between gap-3">
-                    <form
-                      action="/admin/category/toggle-status/<%= category._id %>"
-                      method="POST"
-                      style="display: inline"
-                      class="w-100"
-                    >
-                      <button
-                        type="submit"
-                        class="btn w-100 <%= category.isActive ? 'btn-dark' : 'btn-primary' %>"
-                      >
+                    <form action="/admin/category/toggle-status/<%= category._id %>" method="POST" style="display: inline" class="w-100">
+                      <button type="submit" class="btn w-100 <%= category.isActive ? 'btn-dark' : 'btn-primary' %>">
                         <%= category.isActive ? "Unlist" : "List" %>
                       </button>
                     </form>
                     <button class="btn btn-outline-light w-100" data-bs-toggle="modal" data-bs-target="#editCategoryModal<%= category._id %>">Edit</button>
-                    <button
-                      class="btn btn-outline-danger w-100"
-                      onclick="handleCategoryDelete('<%= category._id %>')"
-                    >
-                      Delete
-                    </button>
+                    <button class="btn btn-outline-danger w-100" onclick="handleCategoryDelete('<%= category._id %>')">Delete</button>
                   </div>
                 </td>
               </tr>
               <% }); %>
             </tbody>            
           </table>
+          <!-- Pagination Controls -->
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+              <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                  <a class="page-link" href="/admin/categories?page=<%= i %>"><%= i %></a>
+                </li>
+              <% } %>
+            </ul>
+          </nav>
+          <!-- End of Pagination Controls -->
         </div>
-      </div>
     </div>
   </div>
 </div>

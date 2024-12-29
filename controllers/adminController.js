@@ -60,7 +60,14 @@ exports.logoutAdmin = asyncHandler(async (req, res) => {
 
 // Render User Management Page
 exports.getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find();
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const skip = (page - 1) * limit;
+
+  const users = await User.find().skip(skip).limit(limit);
+
+  const totalUsers = await User.countDocuments();
+  const totalPages = Math.ceil(totalUsers / limit);
 
   if (!users) {
     throw new Error("Failed to fetch users");
@@ -72,6 +79,8 @@ exports.getUsers = asyncHandler(async (req, res) => {
     activePage: "users",
     isAdmin: true,
     users: users,
+    currentPage: page,
+    totalPages: totalPages,
   });
 });
 
@@ -111,7 +120,14 @@ exports.toggleUserStatus = asyncHandler(async (req, res) => {
 
 // Render Order Management Page
 exports.getOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find().sort({ dateOrdered: -1 });
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const skip = (page - 1) * limit;
+
+  const orders = await Order.find().sort({ dateOrdered: -1 }).skip(skip).limit(limit);
+
+  const totalOrders = await Order.countDocuments();
+  const totalPages = Math.ceil(totalOrders / limit);
 
   res.render("layout", {
     title: "Order Management",
@@ -119,6 +135,8 @@ exports.getOrders = asyncHandler(async (req, res) => {
     activePage: "orders",
     isAdmin: true,
     orders,
+    currentPage: page,
+    totalPages: totalPages,
   });
 });
 
@@ -193,13 +211,22 @@ exports.viewOrder = asyncHandler(async (req, res) => {
 
 // Render Coupon Management Page
 exports.getCoupons = asyncHandler(async (req, res) => {
-  const coupons = await Coupon.find();
+  const page = parseInt(req.query.page) || 1; // Get the current page from query, default to 1
+  const limit = 10; // Set the number of coupons per page
+  const skip = (page - 1) * limit; // Calculate how many coupons to skip
+
+  const coupons = await Coupon.find().skip(skip).limit(limit); // Fetch coupons with pagination
+  const totalCoupons = await Coupon.countDocuments(); // Get total number of coupons
+  const totalPages = Math.ceil(totalCoupons / limit); // Calculate total pages
+
   res.render("layout", {
     title: "Coupon Management",
     viewName: "admin/couponManagement",
     activePage: "coupon",
     isAdmin: true,
     coupons,
+    currentPage: page, // Pass current page to the view
+    totalPages: totalPages, // Pass total pages to the view
   });
 });
 
@@ -349,13 +376,22 @@ exports.toggleCouponStatus = asyncHandler(async (req, res) => {
 
 // Render Offer Management Page
 exports.getOffers = asyncHandler(async (req, res) => {
-  const offers = await Offer.find().populate("product").populate("category");
+  const page = parseInt(req.query.page) || 1; // Get the current page from query, default to 1
+  const limit = 10; // Set the number of offers per page
+  const skip = (page - 1) * limit; // Calculate how many offers to skip
+
+  const offers = await Offer.find().populate("product").populate("category").skip(skip).limit(limit); // Fetch offers with pagination
+  const totalOffers = await Offer.countDocuments(); // Get total number of offers
+  const totalPages = Math.ceil(totalOffers / limit); // Calculate total pages
+
   res.render("layout", {
     title: "Offer Management",
     viewName: "admin/offerManagement",
     activePage: "offer",
     isAdmin: true,
     offers,
+    currentPage: page, // Pass current page to the view
+    totalPages: totalPages, // Pass total pages to the view
   });
 });
 

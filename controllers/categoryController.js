@@ -4,10 +4,16 @@ const asyncHandler = require("express-async-handler");
 
 // Render Category Management Page
 exports.getCategory = asyncHandler(async (req, res) => {
-  const categories = await Category.find();
+  const page = parseInt(req.query.page) || 1; // Get the current page from query, default to 1
+  const limit = 10; // Set the number of categories per page
+  const skip = (page - 1) * limit; // Calculate how many categories to skip
+
+  const categories = await Category.find().skip(skip).limit(limit); // Fetch categories with pagination
+  const totalCategories = await Category.countDocuments(); // Get total number of categories
+  const totalPages = Math.ceil(totalCategories / limit); // Calculate total pages
 
   if (!categories) {
-    throw new Error("Failed to fetch users");
+    throw new Error("Failed to fetch categories");
   }
 
   res.render("layout", {
@@ -16,6 +22,8 @@ exports.getCategory = asyncHandler(async (req, res) => {
     activePage: "category",
     isAdmin: true,
     categories: categories,
+    currentPage: page, // Pass current page to the view
+    totalPages: totalPages, // Pass total pages to the view
   });
 });
 

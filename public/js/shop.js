@@ -1,14 +1,16 @@
 async function searchProduct(query) {
-  if (query === undefined) {
+  if (query === undefined || query === null) {
     query = '';
   }
   
+  // Trim the query to remove any leading/trailing whitespace
+  query = query.trim();
+  
   try {
-    // Use fetch to send a GET request to the backend
     const response = await fetch(`shop/search-products?query=${encodeURIComponent(query)}`);
     if (response.ok) {
       const products = await response.json();
-      renderSearchResults(products); // Call function to render the results
+      renderSearchResults(products);
     } else {
       console.error('Error fetching products');
     }

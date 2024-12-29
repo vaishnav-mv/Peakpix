@@ -28,9 +28,8 @@ shopRouter.get('/search-products', async (req, res) => {
     let products;
     if (query === '') {
       products = await Product.find();
-
     } else {
-      const regex = new RegExp('^' + query, 'i');
+      const regex = new RegExp(query, 'i');
       products = await Product.find({ name: { $regex: regex } });
     }
 

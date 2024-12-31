@@ -3,6 +3,7 @@ const accountRouter = express.Router();
 const {userAuth} = require("../middleware/userAuth");
 const {
   cancelOrder,
+  returnOrder,
   getOrderHistory,
   getOrderDetail,
 } = require("../controllers/checkoutController");
@@ -45,7 +46,9 @@ accountRouter.get("/wallet/transactions", userAuth, walletTransactions);
 
 accountRouter.get("/order-history", userAuth, getOrderHistory);
 
-accountRouter.get("/order-history/cancel/:id", userAuth, cancelOrder);
+accountRouter.post("/order-history/cancel/:id", userAuth, cancelOrder);
+
+accountRouter.post("/order-history/return/:id", userAuth, returnOrder);
 
 accountRouter.get("/order-history/:id", userAuth, getOrderDetail);
 

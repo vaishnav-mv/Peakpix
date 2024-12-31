@@ -35,7 +35,7 @@
               <td class="align-middle"><%= new Date(order.dateOrdered).toLocaleDateString() %></td>
               <td class="align-middle">
                 <span class="badge 
-                  <%= order.status === 'Delivered' ? 'bg-success' : order.status === 'Canceled' ? 'bg-danger' : 'bg-primary' %>">
+                  <%= order.status === 'Delivered' ? 'bg-success' : order.status === 'Returned' ? 'bg-info' : order.status === 'Cancelled' ? 'bg-danger' : 'bg-primary' %>">
                   <%= order.status %>
                 </span>
               </td>

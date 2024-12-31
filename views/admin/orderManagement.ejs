@@ -41,11 +41,13 @@
                     name="status"
                     onchange="updateOrderStatus('<%= order._id %>', this.value)"
                   >
+                    <%= order.status === 'Cancelled' || order.status === 'Returned' ? 'disabled' : '' %>>
                     <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
                     <option value="Processed" <%= order.status === 'Processed' ? 'selected' : '' %>>Processed</option>
                     <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                     <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                     <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                    <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
                   </select>
                 </td>
                 <td class="text-center"><%= new Date(order.dateOrdered).toLocaleDateString() %></td>

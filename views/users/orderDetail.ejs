@@ -19,9 +19,21 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="card-title mb-0">Order Details</h5>
-      <span class="badge bg-primary"><%= order.status %></span>
+      <span class="badge <%= 
+        order.status === 'Cancelled' ? 'bg-danger' : 
+        order.status === 'Delivered' ? 'bg-success' : 
+        'bg-primary' %>">
+        <%= order.status %>
+      </span>
     </div>
     <div class="card-body">
+      <% if (order.status === 'Cancelled') { %>
+        <div class="alert alert-danger mb-4">
+          <h6 class="alert-heading mb-2">Cancellation Details</h6>
+          <p class="mb-1"><strong>Reason:</strong> <%= order.cancellationReason %></p>
+          <small class="text-muted">Cancelled on: <%= new Date(order.updatedAt).toLocaleString() %></small>
+        </div>
+      <% } %>
       <div class="row mb-4">
         <div class="col-md-6">
           <p class="mb-2">
@@ -98,6 +110,16 @@
     <div class="text-end">
       <input type="hidden" name="orderId" value="<%= order._id %>" />
       <button class="btn btn-success" onclick="redirectToPayment('<%= order._id %>')">Proceed to Payment</button>
+    </div>
+  <% } else if ((order.status === 'Shipped' || order.status === 'Delivered') && !order.return?.status) { %>
+    <button onclick="returnOrder('<%= order._id %>')" class="btn btn-warning">Return Order</button>
+  <% } %>
+
+  <% if (order.return?.status) { %>
+    <div class="alert alert-warning mt-3">
+      <h6 class="alert-heading mb-2">Return Details</h6>
+      <p class="mb-1"><strong>Reason:</strong> <%= order.return.reason %></p>
+      <small class="text-muted">Requested on: <%= new Date(order.return.date).toLocaleString() %></small>
     </div>
   <% } %>
 </div>

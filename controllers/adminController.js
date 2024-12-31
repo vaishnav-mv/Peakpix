@@ -196,6 +196,12 @@ exports.viewOrder = asyncHandler(async (req, res) => {
     .populate("user", "firstName lastName email mobile")
     .populate({ path: "orderItems", populate: "product" });
 
+  console.log("Order details:", {
+    status: order.status,
+    isCancelled: order.isCancelled,
+    cancellationReason: order.cancellationReason
+  });
+
   res.render("layout", {
     title: "Order Management",
     viewName: "admin/viewOrder",

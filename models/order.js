@@ -71,7 +71,7 @@ const orderSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Pending", "Processed", "Shipped", "Delivered", "Cancelled"],
+      enum: ["Pending", "Processed", "Shipped", "Delivered", "Cancelled","Returned"],
       default: "Pending",
     },
     dateOrdered: {
@@ -82,6 +82,24 @@ const orderSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    cancellationReason: {
+      type: String,
+      default: null,
+    },
+    return: {
+      status: {
+        type: Boolean,
+        default: false
+      },
+      reason: {
+        type: String,
+        default: null
+      },
+      date: {
+        type: Date,
+        default: null
+      }
+    }
   },
   { timestamps: true }
 );

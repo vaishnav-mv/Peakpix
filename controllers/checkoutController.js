@@ -436,6 +436,12 @@ exports.getOrderDetail = asyncHandler(async (req, res) => {
 exports.cancelOrder = asyncHandler(async (req, res) => {
   try {
     const orderId = req.params.id;
+    const { reason } = req.body;
+
+    if (!reason || reason.trim().length === 0) {
+      return res.status(400).json({ message: "Cancel reason is required" });
+    }
+
     const order = await Order.findById(orderId);
 
     if (!order) {
@@ -446,6 +452,7 @@ exports.cancelOrder = asyncHandler(async (req, res) => {
       order.isCancelled = true;
       await Order.findByIdAndUpdate(orderId, {
         isCancelled: true,
+        cancellationReason: reason.trim()
       });
     } else if (order.status === "Pending" || order.status === "Processed") {
       const user = await User.findById(order.user);
@@ -467,7 +474,21 @@ exports.cancelOrder = asyncHandler(async (req, res) => {
         });
       }
 
-      await Order.findByIdAndUpdate(orderId, { status: "Cancelled" });
+        // Update product stock
+      for (const orderItemId of order.orderItems) {
+        const item = await OrderItem.findById(orderItemId).populate('product');
+        if (item && item.product) {
+          await Product.findByIdAndUpdate(item.product._id, {
+            $inc: { stock: item.quantity }
+          });
+        }
+      }
+
+      await Order.findByIdAndUpdate(orderId, { 
+        status: "Cancelled",
+        cancellationReason: reason.trim(),  // Save the reason
+        isCancelled: true 
+      });
     } else {
       res
         .status(400)
@@ -475,9 +496,82 @@ exports.cancelOrder = asyncHandler(async (req, res) => {
     }
 
     return res.status(200).json({
+      success: true,
       message: "Order cancelled successfully",
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
+  }
+});
+
+
+exports.returnOrder = asyncHandler(async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const { reason } = req.body;
+
+    if (!reason || reason.trim().length === 0) {
+      return res.status(400).json({ message: "Return reason is required" });
+    }
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (!['Shipped', 'Delivered'].includes(order.status)) {
+      return res.status(400).json({ message: "This order cannot be returned" });
+    }
+
+    // Update order with return details and change status to Returned
+    await Order.findByIdAndUpdate(
+      orderId,
+      {
+        status: "Returned",
+        return: {
+          status: true,
+          reason: reason.trim(),
+          date: new Date()
+        }
+      },
+      { new: true }
+    );
+
+    // Process refund
+    if (order.paymentMethod !== 'COD') {
+      await User.findByIdAndUpdate(order.user, {
+        $inc: { walletBalance: order.finalTotal },
+        $push: {
+          walletTransactions: {
+            transactionType: "Credit",
+            amount: order.finalTotal,
+            description: `Refund for returned order #${order._id}`,
+            date: new Date(),
+          },
+        },
+      });
+    }
+
+    // Update product stock
+    for (const orderItemId of order.orderItems) {
+      const item = await OrderItem.findById(orderItemId).populate('product');
+      if (item && item.product) {
+        await Product.findByIdAndUpdate(item.product._id, {
+          $inc: { stock: item.quantity }
+        });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Order returned successfully",
+    });
+  } catch (error) {
+    console.error('Return error:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: error.message || "Error processing return" 
+    });
   }
 });

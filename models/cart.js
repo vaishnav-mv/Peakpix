@@ -26,6 +26,15 @@ const cartSchema = new mongoose.Schema(
           type: Number,
           required: true,
         },
+        discountedPrice: {
+          type: Number,
+          required: true,
+        },
+        discountAmount: {
+          type: Number,
+          required: true,
+          default: 0,
+        },
         quantity: {
           type: Number,
           required: true,
@@ -64,9 +73,23 @@ const cartSchema = new mongoose.Schema(
 );
 
 cartSchema.methods.calculateTotals = function () {
-  this.total = this.items.reduce((acc, item) => acc + item.subtotal, 0) + (this.items.length === 0 ? 0 : this.shippingCharge);
-  this.finalTotal = this.total + (this.total === 0 ? 0 : this.shippingCharge); // apply discount
-  return this.finalTotal;
+  // Calculate total before discounts
+  const originalTotal = this.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  
+  // Calculate total savings
+  const totalSavings = this.items.reduce((acc, item) => acc + (item.discountAmount * item.quantity), 0);
+  
+  // Calculate final total after discounts
+  this.total = this.items.reduce((acc, item) => acc + item.subtotal, 0);
+  
+  // Add shipping charge if cart is not empty
+  this.finalTotal = this.total + (this.items.length === 0 ? 0 : this.shippingCharge);
+  
+  return {
+    originalTotal,
+    totalSavings,
+    finalTotal: this.finalTotal
+  };
 };
 
 const Cart = mongoose.model("Cart", cartSchema);

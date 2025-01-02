@@ -21,11 +21,26 @@ const transporter = nodemailer.createTransport({
 });
 
 const addToCart = async (userId, productId, quantity) => {
-  const product = await Product.findById(productId);
+  // Get product with populated offers
+  const product = await Product.findById(productId)
+    .populate('offerId')
+    .populate({
+      path: 'categoryId',
+      populate: { path: 'offerId' }
+    });
 
   if (!product) {
     throw new Error("Product not found");
   }
+
+  // Calculate discounted price using the offerService
+  const productOffer = product.offerId;
+  const categoryOffer = product.categoryId?.offerId;
+  const { discountedPrice, discountAmount } = calculateDiscountedPrice(
+    product.price,
+    productOffer,
+    categoryOffer
+  );
 
   let cart = await Cart.findOne({ user: userId });
   if (!cart) {
@@ -36,19 +51,27 @@ const addToCart = async (userId, productId, quantity) => {
     item.productId.equals(productId)
   );
 
+  // Create the item object with proper number values
+  const cartItem = {
+    productId: product._id,
+    name: product.name,
+    image: product.images.main,
+    price: Number(product.price),
+    discountedPrice: Number(discountedPrice), // Ensure it's a number
+    discountAmount: Number(discountAmount),    // Ensure it's a number
+    quantity: Number(quantity),
+    subtotal: Number(discountedPrice) * Number(quantity) // Calculate subtotal using numbers
+  };
+
   if (itemIndex > -1) {
-    cart.items[itemIndex].quantity = quantity;
-    cart.items[itemIndex].subtotal =
-      cart.items[itemIndex].quantity * cart.items[itemIndex].price;
+    // Update existing item
+    cart.items[itemIndex] = {
+      ...cart.items[itemIndex],
+      ...cartItem
+    };
   } else {
-    cart.items.push({
-      productId: product._id,
-      name: product.name,
-      image: product.images.main,
-      price: product.price,
-      quantity: quantity,
-      subtotal: product.price * quantity,
-    });
+    // Add new item
+    cart.items.push(cartItem);
   }
 
   cart.calculateTotals();

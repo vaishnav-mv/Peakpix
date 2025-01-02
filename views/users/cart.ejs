@@ -19,7 +19,13 @@
                 <img src="<%= item.image %>" alt="Product Image" class="me-3" style="width: 100px; height: 100px; object-fit: contain;" />
                 <div>
                   <h5 class="mb-1"><%= item.name %></h5>
-                  <p class="mb-1">₹<%= item.price.toFixed(2) %></p>
+                  <p class="mb-1">
+                    <span class="text-muted text-decoration-line-through">₹<%= item.price.toFixed(2) %></span>
+                    <span class="ms-2">₹<%= item.discountedPrice.toFixed(2) %></span>
+                  </p>
+                  <% if (item.discountAmount > 0) { %>
+                    <p class="mb-1 text-success">You save: ₹<%= item.discountAmount.toFixed(2) %></p>
+                  <% } %>
                 </div>
               </div>
 
@@ -55,8 +61,12 @@
         <div class="cart-summary p-4 border rounded bg-light shadow-sm">
           <h4 class="mb-4 text-center text-dark">Cart Summary</h4>
           <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-            <span class="fw-semibold text-muted">Subtotal</span>
-            <span>₹<%= cart ? cart.items.reduce((acc, item) => acc + item.subtotal, 0).toFixed(2) : '0.00' %></span>
+            <span class="fw-semibold text-muted">Original Total</span>
+            <span>₹<%= cart ? cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0).toFixed(2) : '0.00' %></span>
+          </div>
+          <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+            <span class="fw-semibold text-success">Total Savings</span>
+            <span class="text-success">-₹<%= cart ? cart.items.reduce((acc, item) => acc + (item.discountAmount * item.quantity), 0).toFixed(2) : '0.00' %></span>
           </div>
           <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
             <span class="fw-semibold text-muted">Shipping Charge</span>

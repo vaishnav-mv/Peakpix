@@ -91,6 +91,7 @@ const appliedCouponCodeSpan = document.getElementById("appliedCouponCode");
 const removeCouponBtn = document.getElementById("removeCouponBtn");
 const grandTotal = document.getElementById('grandTotal');
 
+
 couponBtn.addEventListener("click", () => {
   let Toast = Swal.mixin({
     toast: true,
@@ -128,6 +129,7 @@ couponBtn.addEventListener("click", () => {
           applyCouponDiv.classList.add("d-none");
           appliedCouponDiv.classList.remove("d-none");
           grandTotal.textContent = `₹${result.finalTotal.toFixed(2)}`;
+    
         } else {
           Toast.fire({
             icon: "error",

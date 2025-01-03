@@ -91,23 +91,6 @@
           </p>
           <% } %>
 
-          <!-- Reviews Section -->
-          <div class="mb-4">
-            <h5 class="mb-2">Reviews</h5>
-            <div class="d-flex align-items-center mb-2">
-              <span class="text-warning">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="far fa-star"></i>
-              </span>
-              <span class="text-muted ms-2">(4.0)</span>
-            </div>
-            <p class="text-muted">Based on <strong>120</strong> reviews.</p>
-          </div>
-
-          
           <!-- Action Buttons -->
           <div class="d-flex gap-3">
             <div
@@ -128,6 +111,75 @@
               </a>
             </div>
           </div>
+
+          <!-- Reviews Section -->
+        
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5 class="mb-0">Ratings & Reviews</h5>
+            </div>
+            <div class="card-body">
+              <!-- Average Rating Display -->
+              <div class="d-flex align-items-center mb-4">
+                <h2 class="mb-0 me-2"><%= product.averageRating.toFixed(1) %></h2>
+                <div>
+                  <div class="text-warning mb-1">
+                    <% for(let i = 1; i <= 5; i++) { %>
+                      <i class="fas fa-star <%= i <= product.averageRating ? '' : 'far' %>"></i>
+                    <% } %>
+                  </div>
+                  <small class="text-muted">Based on <%= product.totalRatings %> reviews</small>
+                </div>
+              </div>
+
+              <% if (isLoggedIn) { %>
+                <!-- Add Review Form -->
+                <form id="reviewForm" class="mb-4">
+                  <input type="hidden" name="productId" value="<%= product._id %>">
+                  <div class="mb-3">
+                    <label class="form-label">Your Rating</label>
+                    <div class="star-rating">
+                      <% for(let i = 5; i >= 1; i--) { %>
+                        <input type="radio" id="star<%= i %>" name="rating" value="<%= i %>" />
+                        <label for="star<%= i %>" title="<%= i %> stars">
+                          <i class="fas fa-star"></i>
+                        </label>
+                      <% } %>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="review" class="form-label">Your Review</label>
+                    <textarea class="form-control" id="review" name="review" rows="3" required></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+              <% } else { %>
+                <p class="alert alert-info">Please <a href="/login">login</a> to leave a review.</p>
+              <% } %>
+
+              <!-- Reviews List -->
+              <div id="reviewsList">
+                <% product.ratings.sort((a,b) => b.date - a.date).forEach(rating => { %>
+                  <div class="border-bottom mb-3 pb-3">
+                    <div class="d-flex justify-content-between">
+                      <div>
+                        <div class="text-warning mb-1">
+                          <% for(let i = 1; i <= 5; i++) { %>
+                            <i class="fas fa-star <%= i <= rating.rating ? '' : 'far' %>"></i>
+                          <% } %>
+                        </div>
+                        <p class="mb-1"><%= rating.review %></p>
+                      </div>
+                      <small class="text-muted"><%= new Date(rating.date).toLocaleDateString() %></small>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+
+          
+          
         </div>
       </div>
     </div>
@@ -301,6 +353,31 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  /* review and rating*/
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.star-rating input {
+  display: none;
+}
+
+.star-rating label {
+  cursor: pointer;
+  color: #ddd;
+  font-size: 1.5rem;
+  padding: 0 0.1em;
+  transition: color 0.2s;
+}
+
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: #ffd700;
+}
 </style>
 
 <script>

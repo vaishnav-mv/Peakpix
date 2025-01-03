@@ -271,3 +271,53 @@ async function getProductIdsFromCart() {
     throw error;
   }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  const reviewForm = document.getElementById('reviewForm');
+  if (reviewForm) {
+    reviewForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const rating = formData.get('rating');
+      const review = formData.get('review');
+      const productId = formData.get('productId');
+
+      try {
+        const response = await fetch('/shop/product/rating', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId,
+            rating,
+            review
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Thank you!',
+            text: 'Your review has been submitted successfully.',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error.message || 'Something went wrong!'
+        });
+      }
+    });
+  }
+});

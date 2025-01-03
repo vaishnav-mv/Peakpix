@@ -120,15 +120,15 @@
               </div>
 
               <!-- Ratings -->
-              <div>
-                <span class="text-warning">
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="far fa-star"></i>
-                </span>
-                <span class="text-muted">(4.0)</span>
+              <div class="ratings">
+                <div class="text-warning">
+                  <% for(let i = 1; i <= 5; i++) { %>
+                    <i class="fas fa-star <%= i <= product.averageRating ? '' : 'far' %>"></i>
+                  <% }
+                  %>
+                  <small class="text-muted">(<%= product.totalRatings ? product.totalRatings : 0 %> reviews)</small>
+                </div>
+                
               </div>
               <div class="d-flex justify-content-between align-items-center ">
                 <span class="<%= product.stock === 0 || product.isOutOfStock ? 'text-danger' : 'text-success' %>">

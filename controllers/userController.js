@@ -428,7 +428,11 @@ exports.filterShop = asyncHandler(async (req, res) => {
 });
 
 exports.getProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id).populate('categoryId');
+  const product = await Product.findById(req.params.id).populate('categoryId')
+  .populate({
+    path: 'ratings.user',
+    select: 'firstName lastName'  // Select the user fields you want to display
+  });
   if (!product) {
     return res.status(404).send("Product not found");
   }
@@ -487,6 +491,8 @@ exports.getProduct = asyncHandler(async (req, res) => {
       discountedPrice 
     },
     relatedProducts: relatedProductsWithDiscounts,
+    isLoggedIn: !!req.session.user,  
+    userId: req.session.user || null
   });
 });
 
@@ -1030,3 +1036,52 @@ exports.downloadInvoice = async (req, res) => {
       res.status(500).send("Internal Server Error");
   }
 };
+
+exports.addRating = asyncHandler(async (req, res) => {
+  const { productId, rating, review } = req.body;
+  const userId = req.session.user;
+
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Check if user has already rated
+    const existingRatingIndex = product.ratings.findIndex(
+      r => r.user.toString() === userId.toString()
+    );
+
+    if (existingRatingIndex >= 0) {
+      // Update existing rating
+      product.ratings[existingRatingIndex] = {
+        user: userId,
+        rating: Number(rating),
+        review,
+        date: new Date()
+      };
+    } else {
+      // Add new rating
+      product.ratings.push({
+        user: userId,
+        rating: Number(rating),
+        review,
+        date: new Date()
+      });
+    }
+
+    // Calculate new average
+    product.calculateAverageRating();
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Rating added successfully",
+      averageRating: product.averageRating,
+      totalRatings: product.totalRatings
+    });
+  } catch (error) {
+    console.error('Error adding rating:', error);
+    res.status(500).json({ message: "Error adding rating" });
+  }
+});

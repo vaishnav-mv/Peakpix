@@ -15,6 +15,7 @@ const {
   addToWishlist,
   getWishList,
   removeWishlist,
+  addRating
 } = require("../controllers/userController");
 
 shopRouter.get("/", getShop);
@@ -40,6 +41,7 @@ shopRouter.get('/search-products', async (req, res) => {
   }
 });
 
+shopRouter.post('/product/rating', userAuth, addRating);
 
 shopRouter.get("/cart", userAuth, getCart);
 

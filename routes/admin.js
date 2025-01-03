@@ -14,6 +14,7 @@ const {
   getAdminLogin,
   toggleUserStatus,
   updateOrderStatus,
+  approveReturn,
   viewOrder,
   addOffer,
   updateOffer,
@@ -58,6 +59,8 @@ adminRouter.use("/products", productRouter);
 adminRouter.get("/orders", adminAuth, getOrders);
 
 adminRouter.post("/orders/update-status/:id", adminAuth, updateOrderStatus);
+
+adminRouter.post('/orders/approve-return/:id', adminAuth, approveReturn);
 
 adminRouter.get("/orders/view/:id", adminAuth, viewOrder);
 

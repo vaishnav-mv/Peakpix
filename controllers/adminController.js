@@ -877,3 +877,59 @@ exports.getBestSellers = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch best sellers' });
   }
 };
+
+exports.approveReturn = asyncHandler(async (req, res) => {
+  const orderId = req.params.id;
+  
+  try {
+    const order = await Order.findById(orderId)
+      .populate({
+        path: 'orderItems',
+        populate: 'product'
+      });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    // Update order status and return request status
+    order.status = "Returned";
+    order.return.isApproved = true;
+    order.return.requestStatus = 'Approved';
+
+    // Process refund if payment method is not COD
+    if (order.paymentMethod !== 'COD') {
+      await User.findByIdAndUpdate(order.user, {
+        $inc: { walletBalance: order.finalTotal },
+        $push: {
+          walletTransactions: {
+            transactionType: "Credit",
+            amount: order.finalTotal,
+            description: `Refund for returned order #${order._id}`,
+            date: new Date(),
+          },
+        },
+      });
+    }
+
+    // Update product stock
+    for (const orderItem of order.orderItems) {
+      await Product.findByIdAndUpdate(orderItem.product._id, {
+        $inc: { stock: orderItem.quantity }
+      });
+    }
+
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Return request approved successfully"
+    });
+  } catch (error) {
+    console.error("Error approving return:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error processing return approval"
+    });
+  }
+});

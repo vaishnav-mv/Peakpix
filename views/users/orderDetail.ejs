@@ -116,8 +116,9 @@
   <% } %>
 
   <% if (order.return?.status) { %>
-    <div class="alert alert-warning mt-3">
+    <div class="alert <%= order.return.requestStatus === 'Approved' ? 'alert-success' : 'alert-warning' %> mt-3">
       <h6 class="alert-heading mb-2">Return Details</h6>
+      <p class="mb-1"><strong>Status:</strong> <%= order.return.requestStatus %></p>
       <p class="mb-1"><strong>Reason:</strong> <%= order.return.reason %></p>
       <small class="text-muted">Requested on: <%= new Date(order.return.date).toLocaleString() %></small>
     </div>

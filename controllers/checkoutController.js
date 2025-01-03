@@ -560,54 +560,30 @@ exports.returnOrder = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "This order cannot be returned" });
     }
 
-    // Update order with return details and change status to Returned
+    // Update order with return request details
     await Order.findByIdAndUpdate(
       orderId,
       {
-        status: "Returned",
         return: {
           status: true,
           reason: reason.trim(),
-          date: new Date()
+          date: new Date(),
+          isApproved: false,
+          requestStatus: 'Pending'
         }
       },
       { new: true }
     );
 
-    // Process refund
-    if (order.paymentMethod !== 'COD') {
-      await User.findByIdAndUpdate(order.user, {
-        $inc: { walletBalance: order.finalTotal },
-        $push: {
-          walletTransactions: {
-            transactionType: "Credit",
-            amount: order.finalTotal,
-            description: `Refund for returned order #${order._id}`,
-            date: new Date(),
-          },
-        },
-      });
-    }
-
-    // Update product stock
-    for (const orderItemId of order.orderItems) {
-      const item = await OrderItem.findById(orderItemId).populate('product');
-      if (item && item.product) {
-        await Product.findByIdAndUpdate(item.product._id, {
-          $inc: { stock: item.quantity }
-        });
-      }
-    }
-
     return res.status(200).json({
       success: true,
-      message: "Order returned successfully",
+      message: "Return request submitted successfully",
     });
   } catch (error) {
     console.error('Return error:', error);
     return res.status(500).json({ 
       success: false,
-      message: error.message || "Error processing return" 
+      message: error.message || "Error processing return request" 
     });
   }
 });

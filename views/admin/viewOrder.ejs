@@ -190,11 +190,11 @@
       </div>
     </div>
     <!-- Return Details Section -->
-    <% if (order.return?.status || order.status === 'Returned') { %>
+    <% if (order.return?.status && order.return.requestStatus === 'Pending') { %>
       <div class="col-lg-12 mb-4">
         <div class="card shadow-lg bg-dark text-light">
           <div class="card-header text-light">
-            <h6 class="mb-0 text-warning">Return Details</h6>
+            <h6 class="mb-0 text-warning">Return Request</h6>
           </div>
           <div class="card-body">
             <div class="mb-3">
@@ -202,14 +202,13 @@
               <p class="card-text text-danger"><%= order.return.reason %></p>
             </div>
             <div class="mb-3">
-              <h6 class="mb-2">Return Date</h6>
+              <h6 class="mb-2">Request Date</h6>
               <p class="card-text"><%= new Date(order.return.date).toLocaleString() %></p>
             </div>
-            <div class="mb-3">
-              <h6 class="mb-2">Status</h6>
-              <p class="card-text">
-                <span class="badge bg-info">Returned</span>
-              </p>
+            <div class="text-end">
+              <button onclick="approveReturn('<%= order._id %>')" class="btn btn-success">
+                Approve Return
+              </button>
             </div>
           </div>
         </div>
@@ -217,3 +216,5 @@
     <% } %>
   </div>
 </div>
+
+<script src="/js/orderManagement.js"></script>

@@ -169,30 +169,61 @@ exports.razorPay = asyncHandler(async (req, res) => {
 exports.confirmPayment = asyncHandler(async (req, res) => {
   const orderId = req.body.orderId;
   const paymentMethod = req.body.paymentMethod;
-  const order = await Order.findById(orderId)
-  if (!order) {
-    return res.status(404).json({success: false, message: "Order not found!"});
-  }
-
-  if (paymentMethod === 'COD') {
-    if (order.finalTotal > 1000) {
-      return res.status(400).json({
-        success: false,
-        message: "Cash on Delivery is not available for orders above ₹1000."
+  
+  try {
+    const order = await Order.findById(orderId)
+      .populate({
+        path: 'orderItems',
+        populate: { path: 'product' }
       });
+      
+    if (!order) {
+      return res.status(404).json({success: false, message: "Order not found!"});
     }
+
+    if (paymentMethod === 'COD') {
+      if (order.finalTotal > 1000) {
+        return res.status(400).json({
+          success: false,
+          message: "Cash on Delivery is not available for orders above ₹1000."
+        });
+      }
+    }
+
+    // Update product stock after payment confirmation
+    for (const orderItem of order.orderItems) {
+      const product = orderItem.product;
+      const updatedStock = product.stock - orderItem.quantity;
+      const isOutOfStock = updatedStock <= 0;
+
+      await Product.findByIdAndUpdate(
+        product._id,
+        {
+          $inc: { stock: -orderItem.quantity, popularity: 1 },
+          $set: { isOutOfStock }
+        }
+      );
+    }
+
+    order.paymentMethod = paymentMethod;
+    order.status = "Processed";
+
+    await order.save();
+    
+    res.status(200).json({
+      success: true,
+      message: "Payment confirmed, order updated successfully",
+      order,
+    });
+  } catch (error) {
+    console.error("Error confirming payment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error processing payment",
+      error: error.message
+    });
   }
-
-  order.paymentMethod = paymentMethod;
-  order.status = "Processed";
-
-  await order.save();
-  res.status(200).json({
-    success: true,
-    message: "Payment confirmed, order updated successfully",
-    order,
-  });
-})
+});
 
 
 exports.walletPayment = asyncHandler(async (req, res) => {
@@ -207,7 +238,12 @@ exports.walletPayment = asyncHandler(async (req, res) => {
     }
 
     // Find the order
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId)
+      .populate({
+        path: 'orderItems',
+        populate: { path: 'product' }
+      });
+      
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found!" });
     }
@@ -222,6 +258,21 @@ exports.walletPayment = asyncHandler(async (req, res) => {
 
     // Deduct the order amount from the wallet
     const updatedWalletBalance = parseFloat((user.walletBalance - order.finalTotal).toFixed(2));
+
+    // Update product stock after payment confirmation
+    for (const orderItem of order.orderItems) {
+      const product = orderItem.product;
+      const updatedStock = product.stock - orderItem.quantity;
+      const isOutOfStock = updatedStock <= 0;
+
+      await Product.findByIdAndUpdate(
+        product._id,
+        {
+          $inc: { stock: -orderItem.quantity, popularity: 1 },
+          $set: { isOutOfStock }
+        }
+      );
+    }
 
     // Update the order status and payment method
     order.paymentMethod = "Wallet";
@@ -277,29 +328,12 @@ exports.placeOrder = asyncHandler(async (req, res) => {
     }
 
     const orderItems = await Promise.all(
-      cart.items.map(async (item) => {         //Maps through the cart items to create order items.
-        const orderItem = new OrderItem({      //For each item, it creates a new OrderItem
+      cart.items.map(async (item) => {
+        const orderItem = new OrderItem({
           quantity: item.quantity,
           product: item.productId,
         });
         await orderItem.save();
-
-        const product = await Product.findById(item.productId);
-        if (!product) {
-          return res.status(404).json({ message: "Product not found" });
-        }
-
-        const updatedStock = product.stock - item.quantity;
-        const isOutOfStock = updatedStock <= 0;
-
-        await Product.findByIdAndUpdate(
-          item.productId,
-          {
-            $inc: { stock: -item.quantity, popularity: 1 },
-            $set: { isOutOfStock },
-          } // Decrement stock by the ordered quantity
-        );
-
         return orderItem;
       })
     );
@@ -325,7 +359,7 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 
     const placedOrder = await order.save();
 
-    await Cart.deleteOne({ user: userId });   //Deletes the user's cart after placing the order.
+    await Cart.deleteOne({ user: userId });
 
     res.status(201).json({
       success: true,

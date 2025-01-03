@@ -69,9 +69,12 @@
             <span class="text-success">-₹<%= cart ? cart.items.reduce((acc, item) => acc + (item.discountAmount * item.quantity), 0).toFixed(2) : '0.00' %></span>
           </div>
           <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-            <span class="fw-semibold text-muted">Shipping Charge</span>
-            <span>₹<%= cart ? cart.shippingCharge.toFixed(2) : '0.00' %></span>
-          </div>
+          <span class="fw-semibold text-muted">Subtotal</span>
+          <span
+            >₹<%= cart.items.reduce((acc, item) => acc + item.subtotal,
+            0).toFixed(2) %></span
+          >
+        </div>
           <div class="d-flex justify-content-between mb-4 border-bottom pb-2 total">
             <span class="fw-bold text-dark">Grand Total</span>
             <span class="fs-5 fw-bold text-dark">₹<%= cart ? cart.total.toFixed(2) : '0.00' %></span>

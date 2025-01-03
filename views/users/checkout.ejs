@@ -28,7 +28,8 @@
               <div>
                 <h5 class="mb-1"><%= item.name %></h5>
                 <p class="mb-1">
-                  ₹<%= item.price.toFixed(2) %> x <%= item.quantity %>
+                  <span class="text-muted text-decoration-line-through">₹<%= item.price.toFixed(2) %></span>
+                  <span class="ms-2">₹<%= item.discountedPrice.toFixed(2) %></span>
                 </p>
               </div>
             </div>
@@ -50,17 +51,17 @@
           >
         </div>
         <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-          <span class="fw-semibold text-muted">Savings</span>
-          <span>-₹<%= cart ? cart.items.reduce((acc, item) => acc + (item.discountAmount * item.quantity), 0).toFixed(2) : '0.00' %></span>
-        </div>
+            <span class="fw-semibold text-muted">Shipping Charge</span>
+            <span>₹<%= cart ? cart.shippingCharge.toFixed(2) : '0.00' %></span>
+          </div>
         <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-          <span class="fw-semibold text-muted">Shipping Charge</span>
-          <span>₹<%= cart.shippingCharge.toFixed(2) %></span>
+          <span class="fw-semibold text-muted">Coupon Discount</span>
+          <span id="couponDiscount">-₹<%= cart.discountApplied ? cart.discountApplied.toFixed(2) : '0.00' %></span>
         </div>
         <div class="d-flex justify-content-between mb-4 pb-2 total">
           <span class="fw-bold text-dark">Grand Total</span>
           <span class="fs-5 fw-bold text-dark" id="grandTotal"
-            >₹<%= cart.total.toFixed(2) %></span
+            >₹<%= cart.finalTotal.toFixed(2) %></span
           >
         </div>
 

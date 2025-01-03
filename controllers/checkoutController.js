@@ -84,6 +84,7 @@ exports.applyCoupon = asyncHandler(async (req, res) => {
       message: `Coupon ${couponCode} applied successfully.`,
       finalTotal,
       appliedCoupon: cart.appliedCoupon,
+      discountApplied: discount
     });
   } catch (error) {
     console.error("Error applying coupon:", error);
@@ -130,6 +131,7 @@ exports.removeCoupon = asyncHandler(async (req, res) => {
       success: true,
       message: "Coupon removed successfully",
       finalTotal: cart.finalTotal,
+      discountApplied: cart.discountApplied
     });
   } catch (error) {
     console.error("Error removing coupon:", error);

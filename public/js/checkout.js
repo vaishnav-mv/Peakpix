@@ -90,7 +90,7 @@ const appliedCouponDiv = document.getElementById("appliedCouponDiv");
 const appliedCouponCodeSpan = document.getElementById("appliedCouponCode");
 const removeCouponBtn = document.getElementById("removeCouponBtn");
 const grandTotal = document.getElementById('grandTotal');
-
+const couponDiscount = document.getElementById('couponDiscount');
 
 couponBtn.addEventListener("click", () => {
   let Toast = Swal.mixin({
@@ -129,6 +129,7 @@ couponBtn.addEventListener("click", () => {
           applyCouponDiv.classList.add("d-none");
           appliedCouponDiv.classList.remove("d-none");
           grandTotal.textContent = `₹${result.finalTotal.toFixed(2)}`;
+          couponDiscount.textContent = `-₹${result.discountApplied.toFixed(2)}`;
     
         } else {
           Toast.fire({
@@ -180,6 +181,7 @@ removeCouponBtn.addEventListener("click", async () => {
           title: result.message,
         });
         grandTotal.textContent = `₹${result.finalTotal.toFixed(2)}`; 
+        couponDiscount.textContent = `-₹${result.discountApplied.toFixed(2)}`;
       } else {
         Toast.fire({
           icon: "error",

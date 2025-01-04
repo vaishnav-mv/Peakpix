@@ -30,6 +30,11 @@ function renderSearchResults(products) {
   }
 
   products.forEach(product => {
+    const rating = product.averageRating || 0;
+    const stars = Array(5).fill(0).map((_, i) => 
+      `<i class="fas fa-star ${i < rating ? '' : 'far'}"></i>`
+    ).join('');
+
     const productCard = `
       <div class="col-md-4 col-sm-6">
         <div class="card h-100 shadow-sm border-1 ${product.isOutOfStock ? 'out-of-stock' : ''}">
@@ -52,6 +57,12 @@ function renderSearchResults(products) {
               <span class="${product.stock === 0 || product.isOutOfStock ? 'text-danger' : 'text-success'}">
                 ${product.stock === 0 || product.isOutOfStock ? 'Out of Stock' : product.stock + ' Available'}
               </span>
+            </div>
+            <div class="ratings mb-2">
+              <div class="text-warning">
+                ${stars}
+                <small class="text-muted ms-1">(${product.totalRatings || 0})</small>
+              </div>
             </div>
           </div>
           <div class="card-footer bg-white border-0">

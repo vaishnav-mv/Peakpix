@@ -106,7 +106,8 @@
                 <i class="fas fa-cart-plus me-2"></i> Add to Cart
               </a>
               <!-- Wishlist Button -->
-              <a href="#" class="btn btn-outline-dark-purple rounded-end w-50">
+              <a href="#" class="btn btn-outline-dark-purple rounded-end w-50 <% if (product.isOutOfStock) { %> disabled <% } %>"
+                onclick="addToWishList('<%= product._id %>')">
                 <i class="fas fa-heart me-2"></i> Wishlist
               </a>
             </div>
@@ -486,4 +487,4 @@
 </script>
 
 <script src="/js/cart.js"></script>
-<script src="/js/cart.js"></script>
+<script src="/js/wishlist.js"></script>

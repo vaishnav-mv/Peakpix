@@ -17,47 +17,57 @@
       <div class="card shadow-sm">
         <div class="card-header bg-dark text-light">
           <h5>Sales Report</h5>
-          <div class="d-flex align-items-center">
-            <div class="dropdown float-end me-3">
-              <button
-                class="btn btn-dark dropdown-toggle px-4"
-                id="filterDropdown"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                Daily
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                <li>
-                  <a class="dropdown-item" href="#" data-value="Daily">Daily</a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#" data-value="Weekly"
-                    >Weekly</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#" data-value="Monthly"
-                    >Monthly</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#" data-value="Yearly"
-                    >Yearly</a
-                  >
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="#"
-                    data-value="Custom Date Range"
-                    >Custom Date Range</a
-                  >
-                </li>
-              </ul>
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="dropdown float-end me-3">
+                <button
+                  class="btn btn-dark dropdown-toggle px-4"
+                  id="filterDropdown"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  Daily
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                  <li>
+                    <a class="dropdown-item" href="#" data-value="Daily">Daily</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" data-value="Weekly"
+                      >Weekly</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" data-value="Monthly"
+                      >Monthly</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" data-value="Yearly"
+                      >Yearly</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      data-value="Custom Date Range"
+                      >Custom Date Range</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <!-- Add download buttons -->
+              <div class="ms-3">
+                <button id="pdfDownload" class="btn btn-danger me-2">
+                  <i class="fas fa-file-pdf me-1"></i> PDF
+                </button>
+                <button id="excelDownload" class="btn btn-success">
+                  <i class="fas fa-file-excel me-1"></i> Excel
+                </button>
+              </div>
             </div>
-
             <!-- Custom Date Range Input Fields -->
             <div id="customDateRange" class="d-none">
               <input
@@ -136,17 +146,7 @@
             </div>
           </div>
 
-          <!-- Download Buttons -->
-          <div class="row mt-4">
-            <div class="col-md-6">
-              <button id="pdfDownload" class="btn btn-outline-light btn-block">
-                Download PDF
-              </button>
-              <button id="excelDownload" class="btn btn-primary btn-block">
-                Download Excel
-              </button>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>
@@ -266,4 +266,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+  <!-- Add these in the head section or at the end of your body -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </div>

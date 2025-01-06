@@ -53,10 +53,6 @@ async function cancelOrder(orderId) {
     });
   }
 }
-// function downloadInvoice(orderId) {
-//   const invoiceUrl = `/account/order/${orderId}/invoice`;
-//   window.location.href = invoiceUrl;
-// }
 
 async function returnOrder(orderId) {
   try {

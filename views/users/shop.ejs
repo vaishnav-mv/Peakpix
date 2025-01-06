@@ -107,9 +107,9 @@
               <h5 class="card-title text-truncate"><%= product.name %></h5>
               <!-- Product Price -->
               <div class="d-flex align-items-center">
-                <% if (product.discountedPrice && product.discountedPrice < product.price) { %>
+                <% if (product.discountedPrice && product.discountedPrice.discountedPrice < product.price) { %>
                   <!-- Show discounted price and crossed-out original price -->
-                  <h6 class="card-price mb-0">₹<%= product.discountedPrice.toFixed(2) %></h6>
+                  <h6 class="card-price mb-0">₹<%= product.discountedPrice.discountedPrice.toFixed(2) %></h6>
                   <span class="text-muted ms-2">
                     <del>₹<%= product.price.toFixed(2) %></del>
                   </span>

@@ -62,9 +62,9 @@
         <div class="col-md-3">
           <h1 class="h3 mb-3"><%= product.name %></h1>
           <!-- Product Price -->
-          <% if (product.discountedPrice < product.price) { %>
+          <% if (product.discountedPrice.discountedPrice < product.price) { %>
             <h4 class="text-primary mb-3">
-              ₹<%= product.discountedPrice.toFixed(2) %>
+              ₹<%= product.discountedPrice.discountedPrice.toFixed(2) %>
               <span class="text-muted ms-2">
                 <del>₹<%= product.price.toFixed(2) %></del>
               </span>
@@ -237,10 +237,10 @@
             <%= product.name %>
           </h5>
           <p class="card-text mb-3">
-            <% if (product.discountedPrice < product.price) { %>
+            <% if (product.discountedPrice.discountedPrice < product.price) { %>
               <!-- Discounted Price and Original Price -->
               <span class="text-primary">
-                ₹<%= product.discountedPrice.toFixed(2) %>
+                ₹<%= product.discountedPrice.discountedPrice.toFixed(2) %>
               </span>
               <span class="text-muted ms-2">
                 <del>₹<%= product.price.toFixed(2) %></del>
@@ -287,17 +287,27 @@
     <div class="card-body">
       <div id="reviewsList">
         <% if (product.ratings && product.ratings.length > 0) { %>
-          <% product.ratings.sort((a,b) => b.date - a.date).forEach(rating => { %>
+          <% product.ratings.sort((a, b) => b.date - a.date).forEach(rating => { %>
             <div class="border-bottom mb-3 pb-3">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <h6 class="mb-1"><%= rating.user.firstName %> <%= rating.user.lastName %></h6>
-                  <div class="text-warning mb-2">
-                    <% for(let i = 1; i <= 5; i++) { %>
-                      <i class="fas fa-star <%= i <= rating.rating ? '' : 'far' %>"></i>
-                    <% } %>
-                  </div>
-                  <p class="mb-1"><%= rating.review %></p>
+                  <% if (rating.user) { %>
+                    <h6 class="mb-1"><%= rating.user.firstName %> <%= rating.user.lastName %></h6>
+                    <div class="text-warning mb-2">
+                      <% for (let i = 1; i <= 5; i++) { %>
+                        <i class="fas fa-star <%= i <= rating.rating ? '' : 'far' %>"></i>
+                      <% } %>
+                    </div>
+                    <p class="mb-1"><%= rating.review %></p>
+                  <% } else { %>
+                    <h6 class="mb-1">Anonymous</h6>
+                    <div class="text-warning mb-2">
+                      <% for (let i = 1; i <= 5; i++) { %>
+                        <i class="fas fa-star <%= i <= rating.rating ? '' : 'far' %>"></i>
+                      <% } %>
+                    </div>
+                    <p class="mb-1"><%= rating.review %></p>
+                  <% } %>
                 </div>
                 <small class="text-muted">
                   <%= new Date(rating.date).toLocaleDateString('en-US', { 

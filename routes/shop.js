@@ -15,7 +15,7 @@ const {
   addToWishlist,
   getWishList,
   removeWishlist,
-  addRating
+  addRating,
 } = require("../controllers/userController");
 
 shopRouter.get("/", getShop);
@@ -40,6 +40,7 @@ shopRouter.get('/search-products', async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 });
+
 
 shopRouter.post('/product/rating', userAuth, addRating);
 

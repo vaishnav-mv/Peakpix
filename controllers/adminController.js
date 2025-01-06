@@ -7,7 +7,6 @@ const Category = require("../models/categories");
 const Coupon = require("../models/coupon");
 const asyncHandler = require("express-async-handler");
 const moment = require("moment");
-
 // ============================
 //  Admin Authentication Controllers
 // ============================

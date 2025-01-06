@@ -20,6 +20,7 @@ const {
   walletTransactions,
   updatePassword,
   downloadInvoice,
+  getInvoiceData
 } = require("../controllers/userController");
 
 accountRouter.get("/", userAuth, getUserAccount);
@@ -50,9 +51,13 @@ accountRouter.post("/order-history/cancel/:id", userAuth, cancelOrder);
 
 accountRouter.post("/order-history/return/:id", userAuth, returnOrder);
 
+accountRouter.get('/order-history/:orderId/invoice-data', userAuth, getInvoiceData);
+
 accountRouter.get("/order-history/:id", userAuth, getOrderDetail);
 
-accountRouter.get("/order/:id/invoice", downloadInvoice);
+
+
+// accountRouter.get("/order/:id/invoice", downloadInvoice);
 
 
 module.exports = accountRouter;

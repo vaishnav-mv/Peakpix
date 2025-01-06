@@ -953,6 +953,61 @@ exports.removeWishlist = asyncHandler(async (req, res) => {
   }
 })
 
+exports.getInvoiceData = asyncHandler(async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const order = await Order.findById(orderId).populate({ 
+      path: "orderItems", 
+      populate: "product" 
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Process order items to ensure all required data is present
+    const processedOrderItems = order.orderItems.map(item => ({
+      product: {
+        name: item.product?.name || 'Product Not Available',
+        price: Number(item.product?.price || 0)
+      },
+      quantity: Number(item.quantity || 0),
+      total: Number(item.product?.price || 0) * Number(item.quantity || 0)
+    }));
+
+    // Calculate totals
+    const subtotal = processedOrderItems.reduce((sum, item) => sum + item.total, 0);
+
+    const invoiceData = {
+      orderId: order._id,
+      dateOrdered: order.dateOrdered || order.createdAt,
+      paymentMethod: order.paymentMethod || 'N/A',
+      status: order.status || 'N/A',
+      name: order.name || 'N/A',
+      location: order.location || 'N/A',
+      city: order.city || 'N/A',
+      state: order.state || 'N/A',
+      zip: order.zip || 'N/A',
+      mobile: order.mobile || 'N/A',
+      orderItems: processedOrderItems,
+      totalAmount: Number(order.totalAmount || 0),
+      shippingCharge: Number(order.shippingCharge || 0),
+      discountApplied: Number(order.discountApplied || 0),
+      finalTotal: Number(order.finalTotal || subtotal + (order.shippingCharge || 0) - (order.discountApplied || 0))
+    };
+    console.log(invoiceData);
+
+    res.json(invoiceData);
+    
+  } catch (error) {
+    console.error("Error in getInvoiceData:", error);
+    res.status(500).json({ 
+      message: 'Error generating invoice data',
+      error: error.message 
+    });
+  }
+});
+
 exports.downloadInvoice = async (req, res) => {
   const orderId = req.params.id;
 

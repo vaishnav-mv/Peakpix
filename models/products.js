@@ -85,6 +85,14 @@ const productSchema = new mongoose.Schema(
     totalRatings: {
       type: Number,
       default: 0
+    },
+    discountedPrice: { 
+      type: Number,
+      default: 0,
+    },
+    discountAmount: { 
+      type: Number,
+      default: 0,
     }
   },
   {

@@ -19,12 +19,15 @@
                 <img src="<%= item.image %>" alt="Product Image" class="me-3" style="width: 100px; height: 100px; object-fit: contain;" />
                 <div>
                   <h5 class="mb-1"><%= item.name %></h5>
-                  <p class="mb-1">
-                    <span class="text-muted text-decoration-line-through">₹<%= item.price.toFixed(2) %></span>
-                    <span class="ms-2">₹<%= item.discountedPrice.toFixed(2) %></span>
-                  </p>
+                  
                   <% if (item.discountAmount > 0) { %>
+                    <p class="mb-1">
+                      <span class="text-muted text-decoration-line-through">₹<%= item.price.toFixed(2) %></span>
+                      <span class="ms-2">₹<%= item.discountedPrice.toFixed(2) %></span>
+                    </p>
                     <p class="mb-1 text-success">You save: ₹<%= item.discountAmount.toFixed(2) %></p>
+                  <% } else { %>
+                    <span class="ms-2">₹<%= item.price.toFixed(2) %></span>
                   <% } %>
                 </div>
               </div>

@@ -112,10 +112,21 @@ async function returnOrder(orderId) {
 
 async function downloadInvoice(orderId) {
   try {
+    // Fetch order data to check its status
     const response = await fetch(`/account/order-history/${orderId}/invoice-data`);
     if (!response.ok) throw new Error('Failed to fetch order data');
     const orderData = await response.json();
     console.log('Order Data:', orderData); // For debugging
+
+    // Check if the order status allows invoice download
+    const allowedStatuses = ['Delivered', 'Returned', 'Cancelled'];
+    if (!allowedStatuses.includes(orderData.status)) {
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Action',
+        text: 'Invoice can only be downloaded for delivered, returned, or cancelled orders.',
+      });
+    }
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();

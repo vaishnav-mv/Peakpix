@@ -27,10 +27,15 @@
               />
               <div>
                 <h5 class="mb-1"><%= item.name %></h5>
-                <p class="mb-1">
-                  <span class="text-muted text-decoration-line-through">₹<%= item.price.toFixed(2) %></span>
-                  <span class="ms-2">₹<%= item.discountedPrice.toFixed(2) %></span>
-                </p>
+                <% if (item.discountAmount > 0) { %>
+                  <p class="mb-1">
+                    <span class="text-muted text-decoration-line-through">₹<%= item.price.toFixed(2) %></span>
+                    <span class="ms-2">₹<%= item.discountedPrice.toFixed(2) %></span>
+                  </p>
+                  <p class="mb-1 text-success">You save: ₹<%= item.discountAmount.toFixed(2) %></p>
+                <% } else { %>
+                  <span class="ms-2">₹<%= item.price.toFixed(2) %></span>
+                <% } %>
               </div>
             </div>
             <p class="mb-0">Subtotal: ₹<%= item.subtotal.toFixed(2) %></p>
@@ -39,6 +44,7 @@
         <% }); %>
       </div>
     </div>
+
     <!-- Order Summary -->
     <div class="col-md-4">
       <div class="order-summary p-4 border rounded bg-light shadow-sm">
@@ -95,162 +101,179 @@
     </div>
   </div>
 
-  <form id="checkoutForm" data-total-price="<%= cart.finalTotal%>">
-    <!-- Address Selection -->
-    <div class="mb-4">
-      <h4 class="mb-3">Select Address</h4>
-      <div class="row">
-        <% addresses.forEach(address => { %>
-        <div class="col-md-3 mb-3 d-flex">
-          <div class="card flex-fill address-card" data-id="<%= address._id %>">
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">
-                <% if (address.isDefault) { %> <%= address.customName ||
-                address.addressType.charAt(0).toUpperCase() +
-                address.addressType.slice(1) %> (Default) <% } else { %> <%=
-                address.customName ||
-                address.addressType.charAt(0).toUpperCase() +
-                address.addressType.slice(1) %> <% } %>
-              </h5>
-              <p class="card-text flex-grow-1">
-                <%= address.location %>, <%= address.city %>, <%= address.state
-                %>, <%= address.country %> - <%= address.zip %>
-              </p>
+  <div class="row">
+    <!-- Checkout Form -->
+    <div class="col-md-8">
+      <form id="checkoutForm" data-total-price="<%= cart.finalTotal %>">
+        <!-- Address Selection -->
+        <div class="mb-4">
+          <h4 class="mb-3">Select Address</h4>
+          <div class="row">
+            <% addresses.forEach(address => { %>
+            <div class="col-md-3 mb-3 d-flex">
+              <div class="card flex-fill address-card" data-id="<%= address._id %>">
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title">
+                    <% if (address.isDefault) { %> <%= address.customName ||
+                    address.addressType.charAt(0).toUpperCase() +
+                    address.addressType.slice(1) %> (Default) <% } else { %> <%=
+                    address.customName ||
+                    address.addressType.charAt(0).toUpperCase() +
+                    address.addressType.slice(1) %> <% } %>
+                  </h5>
+                  <p class="card-text flex-grow-1">
+                    <%= address.location %>, <%= address.city %>, <%= address.state
+                    %>, <%= address.country %> - <%= address.zip %>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <div class="mb-4"></div>
+        <h4 class="mb-3">Enter New Address</h4>
+        <div class="container my-5">
+          <div class="row">
+            <!-- Form Fields Container -->
+            <div class="col-md-8">
+              <div class="row">
+                <!-- Name Field -->
+                <div class="mb-3 col-12 col-md-6">
+                  <label for="name" class="form-label">Name</label>
+                  <input
+                    type="text"
+                    class="form-control rounded-3 px-3 py-2"
+                    id="name"
+                    name="name"
+                    placeholder="Enter your name"
+                  />
+                </div>
+
+                <!-- Mobile Field -->
+                <div class="mb-3 col-12 col-md-6">
+                  <label for="mobile" class="form-label">Mobile</label>
+                  <input
+                    type="text"
+                    class="form-control rounded-3 px-3 py-2"
+                    id="mobile"
+                    name="mobile"
+                    pattern="\d{10}"
+                    title="Please provide a valid 10-digit mobile number"
+                    placeholder="Enter your mobile number"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Alternate Mobile Field -->
+                <div class="mb-3 col-12 col-md-6">
+                  <label for="alternateMobile" class="form-label"
+                    >Alternate Mobile</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control rounded-3 px-3 py-2"
+                    id="alternateMobile"
+                    name="alternateMobile"
+                    pattern="\d{10}"
+                    title="Please provide a valid 10-digit mobile number"
+                    placeholder="Enter alternate mobile number"
+                  />
+                </div>
+
+                <!-- Location Field -->
+                <div class="mb-3 col-12 col-md-6">
+                  <label for="location" class="form-label">Location</label>
+                  <textarea
+                    class="form-control rounded-3 px-3 py-2"
+                    id="location"
+                    name="location"
+                    rows="2"
+                    placeholder="Enter your location"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- City Field -->
+                <div class="mb-3 col-12 col-md-6">
+                  <label for="city" class="form-label">City</label>
+                  <input
+                    type="text"
+                    class="form-control rounded-3 px-3 py-2"
+                    id="city"
+                    name="city"
+                    placeholder="Enter your city"
+                  />
+                </div>
+
+                <!-- State Field -->
+                <div class="mb-3 col-12 col-md-6">
+                  <label for="state" class="form-label">State</label>
+                  <input
+                    type="text"
+                    class="form-control rounded-3 px-3 py-2"
+                    id="state"
+                    name="state"
+                    placeholder="Enter your state"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Landmark Field -->
+                <div class="mb-3 col-12 col-md-6">
+                  <label for="landmark" class="form-label">Landmark</label>
+                  <input
+                    type="text"
+                    class="form-control rounded-3 px-3 py-2"
+                    id="landmark"
+                    name="landmark"
+                    placeholder="Enter a landmark (optional)"
+                  />
+                </div>
+
+                <!-- ZIP Code Field -->
+                <div class="mb-3 col-12 col-md-6">
+                  <label for="zip" class="form-label">ZIP Code</label>
+                  <input
+                    type="text"
+                    class="form-control rounded-3 px-3 py-2"
+                    id="zip"
+                    name="zip"
+                    placeholder="Enter your ZIP code"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+        <input type="hidden" name="selectedAddressId" id="selectedAddressId" />
+
+        <div class="d-flex justify-content-start col-4">
+          <button id="placeOrder" class="btn btn-dark btn-lg w-100" type="submit">
+            Proceed to Payment
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Available Coupons Section -->
+    <div class="col-md-4 mt-4">
+      <h4 class="mb-3">Available Coupons</h4>
+      <ul class="list-group">
+        <% coupons.forEach(coupon => { %>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><%= coupon.code %></span>
+            <span>Discount: <%= coupon.discountValue %> <%= coupon.discountType === 'percentage' ? '%' : '₹' %></span>
+          </li>
         <% }); %>
-      </div>
+      </ul>
     </div>
-
-    <div class="mb-4"></div>
-    <h4 class="mb-3">Enter New Address</h4>
-    <div class="container my-5">
-      <div class="row">
-        <!-- Form Fields Container -->
-        <div class="col-md-8">
-          <div class="row">
-            <!-- Name Field -->
-            <div class="mb-3 col-12 col-md-6">
-              <label for="name" class="form-label">Name</label>
-              <input
-                type="text"
-                class="form-control rounded-3 px-3 py-2"
-                id="name"
-                name="name"
-                placeholder="Enter your name"
-              />
-            </div>
-
-            <!-- Mobile Field -->
-            <div class="mb-3 col-12 col-md-6">
-              <label for="mobile" class="form-label">Mobile</label>
-              <input
-                type="text"
-                class="form-control rounded-3 px-3 py-2"
-                id="mobile"
-                name="mobile"
-                pattern="\d{10}"
-                title="Please provide a valid 10-digit mobile number"
-                placeholder="Enter your mobile number"
-              />
-            </div>
-          </div>
-
-          <div class="row">
-            <!-- Alternate Mobile Field -->
-            <div class="mb-3 col-12 col-md-6">
-              <label for="alternateMobile" class="form-label"
-                >Alternate Mobile</label
-              >
-              <input
-                type="text"
-                class="form-control rounded-3 px-3 py-2"
-                id="alternateMobile"
-                name="alternateMobile"
-                pattern="\d{10}"
-                title="Please provide a valid 10-digit mobile number"
-                placeholder="Enter alternate mobile number"
-              />
-            </div>
-
-            <!-- Location Field -->
-            <div class="mb-3 col-12 col-md-6">
-              <label for="location" class="form-label">Location</label>
-              <textarea
-                class="form-control rounded-3 px-3 py-2"
-                id="location"
-                name="location"
-                rows="2"
-                placeholder="Enter your location"
-              ></textarea>
-            </div>
-          </div>
-
-          <div class="row">
-            <!-- City Field -->
-            <div class="mb-3 col-12 col-md-6">
-              <label for="city" class="form-label">City</label>
-              <input
-                type="text"
-                class="form-control rounded-3 px-3 py-2"
-                id="city"
-                name="city"
-                placeholder="Enter your city"
-              />
-            </div>
-
-            <!-- State Field -->
-            <div class="mb-3 col-12 col-md-6">
-              <label for="state" class="form-label">State</label>
-              <input
-                type="text"
-                class="form-control rounded-3 px-3 py-2"
-                id="state"
-                name="state"
-                placeholder="Enter your state"
-              />
-            </div>
-          </div>
-
-          <div class="row">
-            <!-- Landmark Field -->
-            <div class="mb-3 col-12 col-md-6">
-              <label for="landmark" class="form-label">Landmark</label>
-              <input
-                type="text"
-                class="form-control rounded-3 px-3 py-2"
-                id="landmark"
-                name="landmark"
-                placeholder="Enter a landmark (optional)"
-              />
-            </div>
-
-            <!-- ZIP Code Field -->
-            <div class="mb-3 col-12 col-md-6">
-              <label for="zip" class="form-label">ZIP Code</label>
-              <input
-                type="text"
-                class="form-control rounded-3 px-3 py-2"
-                id="zip"
-                name="zip"
-                placeholder="Enter your ZIP code"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <input type="hidden" name="selectedAddressId" id="selectedAddressId" />
-
-
-    <div class="d-flex justify-content-start col-4">
-      <button id="placeOrder" class="btn btn-dark btn-lg w-100" type="submit">
-        Proceed to Payment
-      </button>
-    </div>
-  </form>
+  </div>
 </div>
 
 <style>

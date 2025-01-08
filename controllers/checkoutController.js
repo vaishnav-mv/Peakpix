@@ -12,6 +12,7 @@ exports.getCheckoutPage = asyncHandler(async (req, res) => {
   const userId = req.session.user;
   const cart = await Cart.findOne({ user: userId });
   const addresses = await Address.find({ user: userId });
+  const coupons = await Coupon.find({ isActive: true });
   res.render("layout", {
     title: "Checkout",
     header: req.session.user ? "partials/login_header" : "partials/header",
@@ -20,6 +21,7 @@ exports.getCheckoutPage = asyncHandler(async (req, res) => {
     isAdmin: false,
     cart,
     addresses,
+    coupons,
   });
 });
 
@@ -363,7 +365,7 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Order placed successfully",
+      message: "Proceeding to payment page",
       orderId: placedOrder._id,
     });
   } catch (error) {

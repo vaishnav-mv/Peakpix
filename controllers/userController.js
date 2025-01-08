@@ -79,9 +79,9 @@ const addToCart = async (userId, productId, quantity) => {
   return cart;
 };
 
-exports.successGoogleLogin = async (req , res) => { 
-	if(!req.user) 
-		res.redirect('/failure'); 
+exports.successGoogleLogin = async (req, res) => {
+  if (!req.user)
+    res.redirect('/failure');
   try {
     let user = await User.findOne({ email: req.user.email });
 
@@ -106,8 +106,8 @@ exports.successGoogleLogin = async (req , res) => {
   }
 }
 
-exports.failureGoogleLogin = (req , res) => { 
-	res.send("Error"); 
+exports.failureGoogleLogin = (req, res) => {
+  res.send("Error");
 }
 
 exports.sendOtp = asyncHandler(async (req, res) => {
@@ -160,7 +160,7 @@ exports.resendOtp = asyncHandler(async (req, res) => {
   // Generate new OTP and update session
   const otp = crypto.randomInt(100000, 999999);
   const otpExpiry = Date.now() + 5 * 60 * 1000;
-  
+
   console.log(otp)
   req.session.otp = otp;
   req.session.otpExpiry = otpExpiry;
@@ -429,10 +429,10 @@ exports.filterShop = asyncHandler(async (req, res) => {
 
 exports.getProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id).populate('categoryId')
-  .populate({
-    path: 'ratings.user',
-    select: 'firstName lastName'  // Select the user fields you want to display
-  });
+    .populate({
+      path: 'ratings.user',
+      select: 'firstName lastName'  // Select the user fields you want to display
+    });
   if (!product) {
     return res.status(404).send("Product not found");
   }
@@ -479,7 +479,7 @@ exports.getProduct = asyncHandler(async (req, res) => {
       };
     })
   );
-  
+
 
   res.render("layout", {
     title: "Peakpix",
@@ -489,10 +489,10 @@ exports.getProduct = asyncHandler(async (req, res) => {
     isAdmin: false,
     product: {
       ...product.toObject(),
-      discountedPrice 
+      discountedPrice
     },
     relatedProducts: relatedProductsWithDiscounts,
-    isLoggedIn: !!req.session.user,  
+    isLoggedIn: !!req.session.user,
     userId: req.session.user || null
   });
 });
@@ -581,7 +581,7 @@ exports.updatePassword = asyncHandler(async (req, res) => {
   }
 })
 
-exports.resetPassword  = asyncHandler(async (req, res) => {
+exports.resetPassword = asyncHandler(async (req, res) => {
   const { newPassword, confirmPassword } = req.body;
   const email = req.session.email; // Assuming user ID is stored in session
 
@@ -596,7 +596,7 @@ exports.resetPassword  = asyncHandler(async (req, res) => {
   }
 
   try {
-    const user = await User.find({email});
+    const user = await User.find({ email });
     const userId = user[0]._id;
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -850,19 +850,19 @@ exports.deleteItemFromCart = asyncHandler(async (req, res) => {
 exports.getWishList = asyncHandler(async (req, res) => {
   try {
     const userId = req.session.user;
-    
+
     // Check if userId exists
     if (!userId) {
       return res.status(401).send('Unauthorized'); // or redirect to login
     }
 
     const user = await User.findById(userId).populate('wishlist');
-    
+
     const wishlist = user.wishlist.map(product => ({
       _id: product._id,
       name: product.name,
       price: product.price,
-      image: product.images.main, // Adjust according to your schema
+      image: product.images.main,
       description: product.description,
       price: product.price
     }));//maps over wishlist array to create a new array of products with specific fields prepares the wishlist data for rendering.
@@ -928,7 +928,7 @@ exports.addToWishlist = asyncHandler(async (req, res) => {
 exports.removeWishlist = asyncHandler(async (req, res) => {
   try {
     const userId = req.session.user;
-    const productId = req.params.id; 
+    const productId = req.params.id;
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -957,9 +957,9 @@ exports.removeWishlist = asyncHandler(async (req, res) => {
 exports.getInvoiceData = asyncHandler(async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    const order = await Order.findById(orderId).populate({ 
-      path: "orderItems", 
-      populate: "product" 
+    const order = await Order.findById(orderId).populate({
+      path: "orderItems",
+      populate: "product"
     });
 
     if (!order) {
@@ -999,12 +999,12 @@ exports.getInvoiceData = asyncHandler(async (req, res) => {
     console.log(invoiceData);
 
     res.json(invoiceData);
-    
+
   } catch (error) {
     console.error("Error in getInvoiceData:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Error generating invoice data',
-      error: error.message 
+      error: error.message
     });
   }
 });

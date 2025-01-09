@@ -93,6 +93,7 @@ app.use(notFound)
 connectDB()
 .then(() => {
     console.log("Database connection established")
+    console.log("MongoDB URI:", process.env.MONGODB_URI);
     app.listen(PORT, () => {
         console.log(`Server is running on https://peakpix.shop/`);
     })

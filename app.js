@@ -32,16 +32,38 @@ app.use((req, res, next) => {
 
 //configure session middleware
 app.use(session({
-    secret:process.env.SESSION_SECRET,
-    resave:false,
-    saveUninitialized:false,
-    cookie:{
-        maxAge:1000*60*60*24,
-        secure:process.env.NODE_ENV==='production',
-        httpOnly:true
-    }
-}))
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        secure: process.env.NODE_ENV === 'production', // Only set to true if using HTTPS
+        httpOnly: true,
+        sameSite: 'lax',
+        domain: process.env.NODE_ENV === 'production' ? '.peakpix.shop' : undefined // Add your domain in production
+    },
+    name: 'sessionId', // Custom name for the session cookie
+}));
 
+// Add this middleware to log session data (for debugging)
+app.use((req, res, next) => {
+    console.log('Session Data:', {
+        sessionID: req.sessionID,
+        user: req.session.user,
+        tempUser: req.session.tempUser,
+        otp: req.session.otp,
+        otpExpiry: req.session.otpExpiry
+    });
+    next();
+});
+
+// Add this before your routes
+app.use((req, res, next) => {
+    if (!req.session) {
+        return next(new Error('Session initialization failed'));
+    }
+    next();
+});
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 app.use('/',userRouter)

@@ -183,9 +183,24 @@ exports.resendOtp = asyncHandler(async (req, res) => {
 
 exports.verifyAndSignUp = asyncHandler(async (req, res) => {
   const { otp } = req.body;
+  console.log('Received OTP:', otp);
+  console.log('Session OTP:', req.session.otp);
+  console.log('Session Expiry:', req.session.otpExpiry);
+  console.log('Current Time:', Date.now());
 
-  if (req.session.otp && req.session.otpExpiry > Date.now()) {
-    if (req.session.otp == otp) {
+  if (!req.session.otp || !req.session.otpExpiry) {
+    return res.render("layout", {
+      title: "Verify OTP",
+      header: "partials/header",
+      viewName: "users/verifyOtp",
+      error: "Session expired. Please sign up again.",
+      isAdmin: false,
+      activePage: "home",
+    });
+  }
+
+  if (req.session.otpExpiry > Date.now()) {
+    if (String(req.session.otp) === String(otp)) {
       const { firstName, lastName, email, password } = req.session.tempUser;
 
       const newUser = new User({
@@ -197,12 +212,21 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
 
       await newUser.save();
 
+      // Clear OTP related session data
       req.session.otp = null;
       req.session.otpExpiry = null;
       req.session.tempUser = null;
 
+      // Set user session
       req.session.user = newUser._id;
-      res.redirect("/");
+      
+      // Save session explicitly
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+        }
+        res.redirect("/");
+      });
     } else {
       res.render("layout", {
         title: "Verify OTP",
@@ -228,8 +252,7 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
 exports.loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const findUser = await User.findOne({ email });
-  console.log("user:");
-  
+  console.log("Login attempt for user:", email);
 
   if (
     findUser &&
@@ -237,11 +260,22 @@ exports.loginUser = asyncHandler(async (req, res) => {
     findUser.status === "Active"
   ) {
     req.session.user = findUser._id;
-    console.log("usersession:",req.session.user);
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      redirectUrl: "/",
+    
+    // Save session explicitly
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({
+          success: false,
+          message: "Session error",
+        });
+      }
+      console.log("Session saved successfully:", req.sessionID);
+      res.status(200).json({
+        success: true,
+        message: "Login successful",
+        redirectUrl: "/",
+      });
     });
   } else {
     res.status(401).json({

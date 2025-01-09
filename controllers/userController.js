@@ -259,7 +259,9 @@ exports.loginUser = asyncHandler(async (req, res) => {
     (await findUser.isPasswordMatched(password)) &&
     findUser.status === "Active"
   ) {
+    // Set session data
     req.session.user = findUser._id;
+    req.session.isAuthenticated = true; // Add an authentication flag
     
     // Save session explicitly
     req.session.save((err) => {
@@ -270,7 +272,12 @@ exports.loginUser = asyncHandler(async (req, res) => {
           message: "Session error",
         });
       }
-      console.log("Session saved successfully:", req.sessionID);
+      console.log("Session saved successfully. Details:", {
+        sessionID: req.sessionID,
+        userId: findUser._id,
+        cookie: req.session.cookie
+      });
+      
       res.status(200).json({
         success: true,
         message: "Login successful",

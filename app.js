@@ -35,7 +35,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI,
+        mongoUrl: process.env.MONGODB_URL,
         ttl: 24 * 60 * 60, // Session TTL (1 day)
         autoRemove: 'native',
         touchAfter: 24 * 3600 // Time period in seconds between session updates

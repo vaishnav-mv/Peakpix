@@ -86,6 +86,11 @@ app.use('/admin', adminRouter)
 app.use('/shop', shopRouter)
 app.use('/checkout', checkoutRouter)
 
+// Catch-all route for undefined routes
+app.use((req, res, next) => {
+    res.status(404).json({ message: "Not Found" });
+});
+
 app.use(errorHandler)
 app.use(notFound)
 

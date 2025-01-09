@@ -183,69 +183,23 @@ exports.resendOtp = asyncHandler(async (req, res) => {
 
 exports.verifyAndSignUp = asyncHandler(async (req, res) => {
   const { otp } = req.body;
-  console.log('Received OTP:', otp);
-  console.log('Session OTP:', req.session.otp);
-  console.log('Session Expiry:', req.session.otpExpiry);
-  console.log('Current Time:', Date.now());
 
-  if (!req.session.otp || !req.session.otpExpiry) {
-    return res.render("layout", {
-      title: "Verify OTP",
-      header: "partials/header",
-      viewName: "users/verifyOtp",
-      error: "Session expired. Please sign up again.",
-      isAdmin: false,
-      activePage: "home",
-    });
-  }
-
-  if (req.session.otpExpiry > Date.now()) {
+  if (req.session.otp && req.session.otpExpiry > Date.now()) {
     if (String(req.session.otp) === String(otp)) {
-      const { firstName, lastName, email, password } = req.session.tempUser;
-
-      const newUser = new User({
-        firstName,
-        lastName,
-        email,
-        password,
-      });
-
-      await newUser.save();
-
-      // Clear OTP related session data
-      req.session.otp = null;
-      req.session.otpExpiry = null;
-      req.session.tempUser = null;
-
-      // Set user session
-      req.session.user = newUser._id;
-      
-      // Save session explicitly
+      // Set user data in session
+      req.session.user = newUser._id; // Assuming newUser is created after signup
       req.session.save((err) => {
         if (err) {
           console.error('Session save error:', err);
+          return res.status(500).json({ success: false, message: "Session error" });
         }
         res.redirect("/");
       });
     } else {
-      res.render("layout", {
-        title: "Verify OTP",
-        header: "partials/header",
-        viewName: "users/verifyOtp",
-        error: "Invalid OTP",
-        isAdmin: false,
-        activePage: "home",
-      });
+      res.status(400).json({ message: "Invalid OTP" });
     }
   } else {
-    res.render("layout", {
-      title: "Verify OTP",
-      header: "partials/header",
-      viewName: "users/verifyOtp",
-      error: "OTP has expired. Please sign up again.",
-      isAdmin: false,
-      activePage: "home",
-    });
+    res.status(400).json({ message: "OTP expired or not set" });
   }
 });
 
@@ -254,41 +208,19 @@ exports.loginUser = asyncHandler(async (req, res) => {
   const findUser = await User.findOne({ email });
   console.log("Login attempt for user:", email);
 
-  if (
-    findUser &&
-    (await findUser.isPasswordMatched(password)) &&
-    findUser.status === "Active"
-  ) {
-    // Set session data
-    req.session.user = findUser._id;
-    req.session.isAuthenticated = true; // Add an authentication flag
-    
-    // Save session explicitly
+  if (findUser && (await findUser.isPasswordMatched(password))) {
+    req.session.user = findUser._id; // Set user ID in session
+    req.session.isAuthenticated = true; // Optional: set an authentication flag
+
     req.session.save((err) => {
       if (err) {
         console.error('Session save error:', err);
-        return res.status(500).json({
-          success: false,
-          message: "Session error",
-        });
+        return res.status(500).json({ success: false, message: "Session error" });
       }
-      console.log("Session saved successfully. Details:", {
-        sessionID: req.sessionID,
-        userId: findUser._id,
-        cookie: req.session.cookie
-      });
-      
-      res.status(200).json({
-        success: true,
-        message: "Login successful",
-        redirectUrl: "/",
-      });
+      res.status(200).json({ success: true, message: "Login successful", redirectUrl: "/" });
     });
   } else {
-    res.status(401).json({
-      success: false,
-      message: "Invalid Credentials",
-    });
+    res.status(401).json({ success: false, message: "Invalid Credentials" });
   }
 });
 

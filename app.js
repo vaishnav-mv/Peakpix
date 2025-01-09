@@ -71,6 +71,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// Header middleware (instead of separate file)
+app.use((req, res, next) => {
+    res.locals.header = req.session.user ? "partials/login_header" : "partials/header";
+    next();
+});
+
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // Routes

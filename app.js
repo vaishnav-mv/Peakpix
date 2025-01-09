@@ -59,6 +59,6 @@ connectDB()
 .then(()=>{
     console.log("Database connection established")
     app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
+        console.log(`Server is running on https://peakpix.shop/`);
       })
 })

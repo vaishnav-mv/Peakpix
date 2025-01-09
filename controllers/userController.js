@@ -228,6 +228,8 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
 exports.loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const findUser = await User.findOne({ email });
+  console.log("user:");
+  
 
   if (
     findUser &&
@@ -235,6 +237,7 @@ exports.loginUser = asyncHandler(async (req, res) => {
     findUser.status === "Active"
   ) {
     req.session.user = findUser._id;
+    console.log("usersession:",req.session.user);
     res.status(200).json({
       success: true,
       message: "Login successful",

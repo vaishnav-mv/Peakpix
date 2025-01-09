@@ -238,6 +238,7 @@ exports.loginUser = asyncHandler(async (req, res) => {
   ) {
     req.session.user = findUser._id;
     console.log("usersession:",req.session.user);
+    return res.redirect('/')
     res.status(200).json({
       success: true,
       message: "Login successful",

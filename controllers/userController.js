@@ -121,6 +121,7 @@ exports.sendOtp = asyncHandler(async (req, res) => {
 
     console.log('otp--------:',otp)
     req.session.otp = otp;
+    req.session.vaishnav=12345
     req.session.otpExpiry = otpExpiry;
     console.log("otp inside 1 if session otp",req.session.otp);
     console.log("otp inside 1 if",req.session.otpExpiry);
@@ -190,6 +191,8 @@ exports.resendOtp = asyncHandler(async (req, res) => {
 exports.verifyAndSignUp = asyncHandler(async (req, res) => {
   const { otp } = req.body;
  console.log("otp in verifyOtp",req.body);
+ console.log("my",req.session.vaishnav);
+ 
  console.log("otp inside 1 if session otp",req.session.otp);
     console.log("otp inside 1 if",req.session.otpExpiry);
  

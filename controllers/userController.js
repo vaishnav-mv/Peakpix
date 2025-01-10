@@ -120,7 +120,7 @@ exports.sendOtp = asyncHandler(async (req, res) => {
     const otpExpiry = Date.now() + 60 * 1000;
 
     console.log('otp--------:',otp)
-    req.session.otp = otp;
+    req.session.otp = {otp};
     req.session.vaishnav=12345
     req.session.otpExpiry = otpExpiry;
     console.log("otp inside 1 if session otp",req.session.otp);
@@ -167,7 +167,7 @@ exports.resendOtp = asyncHandler(async (req, res) => {
   const otpExpiry = Date.now() + 60 * 1000;
 
   console.log(otp)
-  req.session.otp = otp.toString();
+  req.session.otp = {otp};
   console.log(typeof(req.session.otp));
   
   req.session.otpExpiry = otpExpiry;

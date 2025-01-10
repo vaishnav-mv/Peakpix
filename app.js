@@ -43,6 +43,16 @@ app.use(session({
     
 }));
 
+app.get('/check-session', (req, res) => {
+    if (!req.session.views) {
+        req.session.views = 1;
+    } else {
+        req.session.views++;
+    }
+    res.send(`You have visited this page ${req.session.views} times.`);
+});
+
+
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 

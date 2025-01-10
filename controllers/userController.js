@@ -188,6 +188,8 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
  
  
   if (req.session.otp && req.session.otpExpiry > Date.now()) {
+    console.log("otp inside 1 if session otp",req.session.otp);
+    console.log("otp inside 1 if",req.session.otpExpiry);
     if (String(req.session.otp) === String(otp)) {
       console.log("temp user in verifyOtp",req.session.tempUser);
 

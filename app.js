@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: process.env.MONGODB_URL,
         ttl: 24 * 60 * 60, // Session TTL (1 day)
@@ -44,38 +44,10 @@ app.use(session({
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        sameSite: 'lax',
-        domain: process.env.NODE_ENV === 'production' ? '.peakpix.shop' : undefined
     },
-    name: 'sessionId'
+    
 }));
 
-// Session debugging middleware
-app.use((req, res, next) => {
-    console.log('Session Data:', {
-        sessionID: req.sessionID,
-        user: req.session.user,
-        tempUser: req.session.tempUser,
-        otp: req.session.otp,
-        otpExpiry: req.session.otpExpiry,
-        cookie: req.session.cookie
-    });
-    next();
-});
-
-// Session initialization check
-app.use((req, res, next) => {
-    if (!req.session) {
-        return next(new Error('Session initialization failed'));
-    }
-    next();
-});
-
-// Header middleware (instead of separate file)
-app.use((req, res, next) => {
-    res.locals.header = req.session.user ? "partials/login_header" : "partials/header";
-    next();
-});
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
@@ -86,10 +58,6 @@ app.use('/admin', adminRouter)
 app.use('/shop', shopRouter)
 app.use('/checkout', checkoutRouter)
 
-// Catch-all route for undefined routes
-app.use((req, res, next) => {
-    res.status(404).json({ message: "Not Found" });
-});
 
 app.use(errorHandler)
 app.use(notFound)
@@ -98,7 +66,7 @@ app.use(notFound)
 connectDB()
 .then(() => {
     console.log("Database connection established")
-    console.log("MongoDB URI:", process.env.MONGODB_URI);
+    console.log("MongoDB URL:", process.env.MONGODB_URL);
     app.listen(PORT, () => {
         console.log(`Server is running on https://peakpix.shop/`);
     })

@@ -184,9 +184,12 @@ exports.resendOtp = asyncHandler(async (req, res) => {
 
 exports.verifyAndSignUp = asyncHandler(async (req, res) => {
   const { otp } = req.body;
-
+ console.log("otp in verifyOtp",req.body);
+ 
+ 
   if (req.session.otp && req.session.otpExpiry > Date.now()) {
     if (String(req.session.otp) === String(otp)) {
+      console.log("temp user in verifyOtp",req.session.tempUser);
 
       const { firstName, lastName, email, password } = req.session.tempUser;
 
@@ -196,7 +199,8 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
         email,
         password,
       });
-
+      console.log("newUser in verify otp",newUser);
+      
       await newUser.save();
 
       req.session.otp = null;

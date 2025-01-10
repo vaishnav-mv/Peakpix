@@ -1,4 +1,4 @@
-let countdownTime = 15; // Countdown timer in seconds
+let countdownTime = 60; // Countdown timer in seconds
 const countdownElement = document.getElementById('countdown');
 const resendButton = document.getElementById('resend-btn');
 const resendMessage = document.getElementById('resend-msg');
@@ -26,7 +26,7 @@ function resendOtp() {
   console.log("Resend OTP function called");
 
   resendButton.style.display = 'none';
-  countdownTime = 15;
+  countdownTime = 60;
   countdownElement.innerHTML = countdownTime;
   resendMessage.style.display = 'block';
 

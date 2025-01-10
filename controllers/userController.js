@@ -116,7 +116,7 @@ exports.sendOtp = asyncHandler(async (req, res) => {
 
   if (!findUser) {
     const otp = crypto.randomInt(100000, 999999);
-    const otpExpiry = Date.now() + 5 * 60 * 1000;
+    const otpExpiry = Date.now() + 60 * 1000;
 
     console.log(otp)
     req.session.otp = otp;
@@ -159,7 +159,7 @@ exports.resendOtp = asyncHandler(async (req, res) => {
 
   // Generate new OTP and update session
   const otp = crypto.randomInt(100000, 999999);
-  const otpExpiry = Date.now() + 5 * 60 * 1000;
+  const otpExpiry = Date.now() + 60 * 1000;
 
   console.log(otp)
   req.session.otp = otp;
@@ -186,8 +186,23 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
 
   if (req.session.otp && req.session.otpExpiry > Date.now()) {
     if (String(req.session.otp) === String(otp)) {
-      // Set user data in session
-      req.session.user = newUser._id; // Assuming newUser is created after signup
+
+      const { firstName, lastName, email, password } = req.session.tempUser;
+
+      const newUser = new User({
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+
+      await newUser.save();
+
+      req.session.otp = null;
+      req.session.otpExpiry = null;
+      req.session.tempUser = null;
+
+      req.session.user = newUser._id;
       req.session.save((err) => {
         if (err) {
           console.error('Session save error:', err);
@@ -196,10 +211,24 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
         res.redirect("/");
       });
     } else {
-      res.status(400).json({ message: "Invalid OTP" });
+      res.render("layout", {
+        title: "Verify OTP",
+        header: "partials/header",
+        viewName: "users/verifyOtp",
+        error: "Invalid OTP",
+        isAdmin: false,
+        activePage: "home",
+      });
     }
   } else {
-    res.status(400).json({ message: "OTP expired or not set" });
+    res.render("layout", {
+      title: "Verify OTP",
+      header: "partials/header",
+      viewName: "users/verifyOtp",
+      error: "OTP has expired. Please sign up again.",
+      isAdmin: false,
+      activePage: "home",
+    });
   }
 });
 
@@ -208,7 +237,8 @@ exports.loginUser = asyncHandler(async (req, res) => {
   const findUser = await User.findOne({ email });
   console.log("Login attempt for user:", email);
 
-  if (findUser && (await findUser.isPasswordMatched(password))) {
+  if (findUser && (await findUser.isPasswordMatched(password))&&
+  findUser.status === "Active") {
     req.session.user = findUser._id; // Set user ID in session
     req.session.isAuthenticated = true; // Optional: set an authentication flag
 

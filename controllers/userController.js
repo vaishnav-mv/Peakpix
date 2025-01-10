@@ -199,7 +199,7 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
   if (req.session.otp && req.session.otpExpiry > Date.now()) {
     console.log("otp in verifyOtp",req.body);
     
-    if (req.session.otp === otp.toString()) {
+    if (req.session.otp === otp) {
       console.log("temp user in verifyOtp",req.session.tempUser);
 
       const { firstName, lastName, email, password } = req.session.tempUser;
@@ -227,6 +227,11 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
         res.redirect("/");
       });
     } else {
+      console.log("req.session.otp",req.session.otp);
+      console.log(typeof (req.session.otp))
+      console.log("otp",otp);
+      console.log(typeof (otp))
+      
       res.render("layout", {
         title: "Verify OTP",
         header: "partials/header",

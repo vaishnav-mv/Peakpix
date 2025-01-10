@@ -122,6 +122,9 @@ exports.sendOtp = asyncHandler(async (req, res) => {
     console.log('otp--------:',otp)
     req.session.otp = otp;
     req.session.otpExpiry = otpExpiry;
+    console.log("otp inside 1 if session otp",req.session.otp);
+    console.log("otp inside 1 if",req.session.otpExpiry);
+ 
     req.session.tempUser = { firstName, lastName, email, password };
 
     const mailOptions = {

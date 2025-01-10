@@ -118,7 +118,7 @@ exports.sendOtp = asyncHandler(async (req, res) => {
     const otp = crypto.randomInt(100000, 999999);
     const otpExpiry = Date.now() + 60 * 1000;
 
-    console.log(otp)
+    console.log('otp--------:',otp)
     req.session.otp = otp;
     req.session.otpExpiry = otpExpiry;
     req.session.tempUser = { firstName, lastName, email, password };

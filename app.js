@@ -20,26 +20,14 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, "public")))
 
-// Prevent caching by setting headers
-app.use((req, res, next) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('Surrogate-Control', 'no-store');
-    next();
-})
+
 
 // Configure session middleware with MongoDB store
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URL,
-        ttl: 24 * 60 * 60, // Session TTL (1 day)
-        autoRemove: 'native',
-        touchAfter: 24 * 3600 // Time period in seconds between session updates
-    }),
+  
     cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         secure: process.env.NODE_ENV === 'production',

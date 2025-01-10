@@ -113,7 +113,8 @@ exports.failureGoogleLogin = (req, res) => {
 exports.sendOtp = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
   const findUser = await User.findOne({ email });
-
+  console.log("findUser",findUser);
+  
   if (!findUser) {
     const otp = crypto.randomInt(100000, 999999);
     const otpExpiry = Date.now() + 60 * 1000;

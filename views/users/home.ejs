@@ -22,11 +22,11 @@
         experience.
       </p>
       <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-        <button type="button" class="btn btn-custom btn-lg px-4 me-md-2">
+        <a href="/shop" class="btn btn-custom btn-lg px-4 me-md-2">
           <img src="images/svg/bag.svg" alt="" />
           Shop Now
-        </button>
-        <button type="button" class="btn btn-outline-primary btn-lg px-4">
+        </a>
+        <button type="button" id="categoriesButton" class="btn btn-outline-primary btn-lg px-4">
           Categories
         </button>
       </div>
@@ -35,7 +35,7 @@
 </div>
 
 <div class="container my-5 py-5">
-  <h2 class="text-center mb-4">Explore Our Categories</h2>
+  <h2 id="exploreCategories" class="text-center mb-4">Explore Our Categories</h2>
   <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
     <!-- Earbuds Category -->
     <div class="col">
@@ -147,3 +147,15 @@
     font-size: 1rem;
   }
 </style>
+
+<script>
+  document.getElementById('categoriesButton').addEventListener('click', function() {
+      const targetElement = document.getElementById('exploreCategories');
+      if (targetElement) {
+          targetElement.scrollIntoView({
+              behavior: 'smooth', 
+              block: 'start' 
+          });
+      }
+  });
+</script>

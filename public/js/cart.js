@@ -95,7 +95,7 @@ function addToCart(productId) {
       Swal.fire({
         icon: "error",
         title: "Error!",
-        text: "An error occurred while adding the item to your cart",
+        text: "Please login to add items into the cart",
         confirmButtonColor: "#4a2c77",
       });
     });

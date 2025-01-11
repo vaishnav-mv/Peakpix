@@ -2,7 +2,6 @@ const express = require('express')
 const path = require('path')
 const connectDB = require('./config/database')
 const session = require("express-session")
-const MongoStore = require('connect-mongo')
 require('dotenv').config()
 const {notFound,errorHandler} = require('./middleware/errorHandler')
 const userRouter = require('./routes/user')
@@ -29,18 +28,10 @@ app.use((req, res, next) => {
     next();
 })
 
-// Configure session middleware with MongoDB store
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-  
-    // cookie: {
-    //     maxAge: 1000 * 60 * 60 * 24, // 24 hours
-    //     secure: process.env.NODE_ENV === 'production',
-    //     httpOnly: true,
-    // },
-    
 }));
 
 app.get('/check-session', (req, res) => {

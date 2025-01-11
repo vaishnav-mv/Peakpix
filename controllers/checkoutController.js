@@ -211,6 +211,11 @@ exports.confirmPayment = asyncHandler(async (req, res) => {
     order.status = "Processed";
 
     await order.save();
+
+    // Delete the cart and create a new empty cart
+    await Cart.deleteOne({ user: order.user });
+    let cart = new Cart({ user: order.user._id, items: [], total: 0 });
+    await cart.save();
     
     res.status(200).json({
       success: true,
@@ -290,6 +295,11 @@ exports.walletPayment = asyncHandler(async (req, res) => {
     );
     await order.save();
 
+    // Delete the cart and create a new empty cart
+    await Cart.deleteOne({ user: order.user });
+    let cart = new Cart({ user: order.user._id, items: [], total: 0 });
+    await cart.save();
+
     res.status(200).json({
       success: true,
       message: "Payment confirmed using wallet, order updated successfully",
@@ -360,8 +370,6 @@ exports.placeOrder = asyncHandler(async (req, res) => {
     });
 
     const placedOrder = await order.save();
-
-    await Cart.deleteOne({ user: userId });
 
     res.status(201).json({
       success: true,

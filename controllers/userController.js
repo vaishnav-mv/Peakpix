@@ -4,12 +4,10 @@ const Address = require("../models/address");
 const Cart = require("../models/cart");
 const Offer = require("../models/offer")
 const Order = require("../models/order");
-const PDFDocument = require("pdfkit");
 const asyncHandler = require("express-async-handler");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
-const moment = require("moment");
 const { calculateDiscountedPrice } = require("../services/offerService");
 
 const transporter = nodemailer.createTransport({
@@ -57,10 +55,10 @@ const addToCart = async (userId, productId, quantity) => {
     name: product.name,
     image: product.images.main,
     price: Number(product.price),
-    discountedPrice: Number(discountedPrice), // Ensure it's a number
-    discountAmount: Number(discountAmount),    // Ensure it's a number
+    discountedPrice: Number(discountedPrice), 
+    discountAmount: Number(discountAmount),    
     quantity: Number(quantity),
-    subtotal: Number(discountedPrice) * Number(quantity) // Calculate subtotal using numbers
+    subtotal: Number(discountedPrice) * Number(quantity) 
   };
 
   if (itemIndex > -1) {
@@ -121,11 +119,7 @@ exports.sendOtp = asyncHandler(async (req, res) => {
 
     console.log('otp--------:',otp)
     req.session.otp = otp;
-    req.session.vaishnav=12345
     req.session.otpExpiry = otpExpiry;
-    console.log("otp inside 1 if session otp",req.session.otp);
-    console.log("otp inside 1 if",req.session.otpExpiry);
- 
     req.session.tempUser = { firstName, lastName, email, password };
 
     const mailOptions = {
@@ -168,8 +162,6 @@ exports.resendOtp = asyncHandler(async (req, res) => {
 
   console.log(otp)
   req.session.otp = otp;
-  console.log(typeof(req.session.otp));
-  
   req.session.otpExpiry = otpExpiry;
 
   const mailOptions = {
@@ -190,18 +182,8 @@ exports.resendOtp = asyncHandler(async (req, res) => {
 
 exports.verifyAndSignUp = asyncHandler(async (req, res) => {
   const { otp } = req.body;
- console.log("otp in verifyOtp",req.body);
- console.log("my",req.session.vaishnav);
- 
- console.log("otp inside 1 if session otp",req.session.otp);
-    console.log("otp inside 1 if",req.session.otpExpiry);
- 
   if (req.session.otp && req.session.otpExpiry > Date.now()) {
-    console.log("otp in verifyOtp",req.body);
-    
     if (req.session.otp === Number(otp)) {
-      console.log("temp user in verifyOtp",req.session.tempUser);
-
       const { firstName, lastName, email, password } = req.session.tempUser;
 
       const newUser = new User({
@@ -210,7 +192,6 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
         email,
         password,
       });
-      console.log("newUser in verify otp",newUser);
       
       await newUser.save();
 
@@ -227,11 +208,6 @@ exports.verifyAndSignUp = asyncHandler(async (req, res) => {
         res.redirect("/");
       });
     } else {
-      console.log("req.session.otp",req.session.otp);
-      console.log(typeof (req.session.otp))
-      console.log("otp",otp);
-      console.log(typeof (otp))
-      
       res.render("layout", {
         title: "Verify OTP",
         header: "partials/header",
@@ -303,7 +279,7 @@ exports.getShop = asyncHandler(async (req, res) => {
     },
     {
       $match: {
-        "categoryDetails.isActive": true, // Only include products where the associated category is active
+        "categoryDetails.isActive": true, 
         isActive: true,
       },
     },

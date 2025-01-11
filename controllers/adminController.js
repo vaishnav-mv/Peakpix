@@ -230,8 +230,8 @@ exports.getCoupons = asyncHandler(async (req, res) => {
     activePage: "coupon",
     isAdmin: true,
     coupons,
-    currentPage: page, // Pass current page to the view
-    totalPages: totalPages, // Pass total pages to the view
+    currentPage: page, 
+    totalPages: totalPages, 
   });
 });
 
@@ -256,6 +256,12 @@ exports.addCoupon = asyncHandler(async (req, res) => {
         .json({ success: false, message: "Missing required fields" });
     }
 
+    // Validate date range
+    if (new Date(validFrom) > new Date(validUntil)) {
+      return res.status(400).json({ success: false, message: "validFrom must be less than or equal to validUntil" });
+    }
+
+
     const existingCoupon = await Coupon.findOne({ code }); //checks if a coupon with same code already exist in the database
 
     if (existingCoupon) {
@@ -271,17 +277,15 @@ exports.addCoupon = asyncHandler(async (req, res) => {
       discountType,
       discountValue,
       maxDiscountValue,
-      minCartValue: minCartValue || 0, // Default to 0 if not provided
-      validFrom, // New field for start date
-      validUntil, // New field for expiration date
-      usageLimit: usageLimit || 1, // Default to 1 if not provided
-      isActive: isActive !== undefined ? isActive : true, // Default to true if not provided
+      minCartValue: minCartValue || 0, 
+      validFrom, 
+      validUntil, 
+      usageLimit: usageLimit || 1, 
+      isActive: isActive !== undefined ? isActive : true, 
     });
 
-    // Save the coupon to the database
     await newCoupon.save();
 
-    // Send a success response
     res
       .status(201)
       .json({ success: true, message: "Coupon added successfully!" });
@@ -314,6 +318,12 @@ exports.updateCoupon = async (req, res) => {
     if (!coupon) {
       return res.status(404).json({ message: "Coupon not found" });
     }
+
+    // Validate date range
+    if (new Date(validFrom) > new Date(validUntil)) {
+      return res.status(400).json({ success: false, message: "validFrom must be less than or equal to validUntil" });
+    }
+
 
     coupon.code = code || coupon.code;
     coupon.discountType = discountType || coupon.discountType;
@@ -422,6 +432,11 @@ exports.addOffer = asyncHandler(async (req, res) => {
         .json({ success: false, message: "Missing required fields" });
     }
 
+     // Validate date range
+     if (new Date(validFrom) > new Date(validUntil)) {
+      return res.status(400).json({ success: false, message: "validFrom must be less than or equal to validUntil" });
+    }
+
     // Create a new offer document
     const newOffer = new Offer({
       type,
@@ -449,7 +464,6 @@ exports.addOffer = asyncHandler(async (req, res) => {
       });
     }
 
-    // Send a success response
     res
       .status(201)
       .json({ success: true, message: "Offer added successfully!" });
@@ -482,6 +496,11 @@ exports.updateOffer = async (req, res) => {
       return res.status(404).json({ message: "Offer not found" });
     }
 
+     // Validate date range
+     if (new Date(validFrom) > new Date(validUntil)) {
+      return res.status(400).json({ success: false, message: "validFrom must be less than or equal to validUntil" });
+    }
+
     // Update the offer details
     offer.type = type || offer.type;
     offer.discountType = discountType || offer.discountType;
@@ -491,10 +510,8 @@ exports.updateOffer = async (req, res) => {
     offer.validUntil = validUntil || offer.validUntil;
     offer.minCartValue = minCartValue || offer.minCartValue;
 
-    // Save the updated offer
     await offer.save();
 
-    // Send success response
     res
       .status(200)
       .json({ success: true, message: "Offer updated successfully", offer });
@@ -542,10 +559,8 @@ exports.toggleOfferStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "Offer not found" });
     }
 
-    // Toggle the status field between 'active' and 'expired'
     offer.status = offer.status === 'active' ? 'expired' : 'active';
 
-    // Save the updated offer
     await offer.save();
 
     res.json({ success: true, offer });

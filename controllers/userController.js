@@ -234,8 +234,12 @@ exports.loginUser = asyncHandler(async (req, res) => {
   const findUser = await User.findOne({ email });
   console.log("Login attempt for user:", email);
 
-  if (findUser && (await findUser.isPasswordMatched(password))&&
-  findUser.status === "Active") {
+  // Check if user is inactive
+  if (findUser && findUser.status === "Inactive") {
+    return res.status(403).json({ success: false, message: "Your account is inactive. Please contact support." });
+  }
+
+  if (findUser && (await findUser.isPasswordMatched(password))) {
     req.session.user = findUser._id; // Set user ID in session
     req.session.isAuthenticated = true; // Optional: set an authentication flag
 

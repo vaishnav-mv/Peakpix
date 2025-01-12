@@ -109,6 +109,29 @@ exports.toggleUserStatus = asyncHandler(async (req, res) => {
     throw new Error("User not found or status not changed");
   }
 
+  if (newStatus === "Inactive") {
+    // Find and destroy only the user's session
+    req.sessionStore.all((error, sessions) => {
+      if (error) {
+        console.error("Error getting sessions:", error);
+        return;
+      }
+
+      // Loop through all sessions
+      Object.keys(sessions).forEach((sessionId) => {
+        const session = sessions[sessionId];
+        // Check if this session belongs to the user being deactivated
+        if (session.user && session.user.toString() === userId.toString()) {
+          req.sessionStore.destroy(sessionId, (err) => {
+            if (err) {
+              console.error("Error destroying user session:", err);
+            }
+          });
+        }
+      });
+    });
+  }
+
   // Redirect back to user management page
   res.redirect("/admin/users");
 });
@@ -175,11 +198,6 @@ exports.updateOrderStatus = asyncHandler(async (req, res) => {
       await Order.updateOne({ _id: orderId }, { $set: { status: newStatus } });
     } else {
       return res.status(400).json({ success:false, message: "Invalid status change." });
-    }
-
-    // 5. Admin cannot change the status to cancelled
-    if (newStatus === "Cancelled") {
-      return res.status(400).json({ success:false, message: "Cannot change status to Cancelled." });
     }
 
     res.status(200).json({ success: true, message: "Order status updated successfully" });

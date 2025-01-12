@@ -5,11 +5,10 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
   const paymentButton = document.getElementById('confirmBtn');
   const orderId = paymentButton.dataset.orderid;
   const finalTotal = paymentButton.dataset.finaltotal;
-  console.log(paymentMethod)
 
   let Toast = Swal.mixin({
     toast: true,
-    position: "top", // Adjust position as needed
+    position: "top",
     showConfirmButton: false,
     timer: 2500,
     timerProgressBar: true,
@@ -21,48 +20,49 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
 
   try {
     if (paymentMethod === "Razorpay") {
-      const amount = finalTotal;
-      const currency = "INR";
-      const receiptId = "qwerty1";
-
       const response = await fetch(`/checkout/order/${orderId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: amount * 100,
-          currency,
-          receipt: receiptId,
-        }), // Convert the object to a JSON string
+          amount: Math.round(finalTotal * 100), // Convert to paise
+          currency: "INR",
+          receipt: orderId,
+        }),
       });
-      const {order, orderData} = await response.json();
+      const data = await response.json();
+
+      if (!data.success && data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
 
       var options = {
-        key: "rzp_test_QrPtjXNHHRSmCn", // Enter the Key ID generated from the Dashboard
-        amount,
-        currency,
-        name: "Peakpix", //your business name
+        key: "rzp_test_QrPtjXNHHRSmCn",
+        amount: data.order.amount,
+        currency: data.order.currency,
+        name: "Peakpix",
         description: "Test Transaction",
-        order_id: order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+        order_id: data.order.id,
         handler: async function (response) {
-          const razorpayPaymentId = response.razorpay_payment_id;
-          const razorpayOrderId = response.razorpay_order_id;
-          const razorpaySignature = response.razorpay_signature;
-
           try {
-            const finalCheckoutResponse = await fetch("/checkout", {
+            const confirmResponse = await fetch("/checkout", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({orderId, paymentMethod}),
+              body: JSON.stringify({
+                orderId,
+                paymentMethod: 'Razorpay',
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              }),
             });
 
-            const paymentResult = await finalCheckoutResponse.json();
-            console.log(paymentResult)
-
-            if (paymentResult.success) {
+            const confirmData = await confirmResponse.json();
+            if (confirmData.success) {
               await Toast.fire({
                 icon: "success",
                 title: "Payment completed successful!",
@@ -71,24 +71,20 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
             } else {
               Toast.fire({
                 icon: "error",
-                title:
-                  paymentResult.message ||
-                  "An error occurred while finalizing the order",
+                title: confirmData.message || "An error occurred while finalizing the order",
               });
             }
           } catch (error) {
-            console.error("Error during final checkout:", error);
+            console.error("Error during payment confirmation:", error);
             Toast.fire({
               icon: "error",
-              title:
-                "An unexpected error occurred while finalizing the order",
+              title: "An unexpected error occurred while finalizing the order",
             });
           }
         },
         prefill: {
-          //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
-          name: orderData.name, //your customer's name
-          contact: orderData.mobile, //Provide the customer's phone number for better conversion rates
+          name: data.orderData.name,
+          contact: data.orderData.mobile,
         },
         notes: {
           address: "Razorpay Corporate Office",
@@ -97,15 +93,10 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
           color: "#3399cc",
         },
       };
+
       var rzp1 = new window.Razorpay(options);
       rzp1.on("payment.failed", function (response) {
-        alert(response.error.code);
-        alert(response.error.description);
-        alert(response.error.source);
-        alert(response.error.step);
-        alert(response.error.reason);
-        alert(response.error.metadata.order_id);
-        alert(response.error.metadata.payment_id);
+        window.location.href = `/account/order-history/${orderId}`;
       });
 
       rzp1.open();

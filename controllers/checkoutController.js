@@ -157,14 +157,41 @@ exports.razorPay = asyncHandler(async (req, res) => {
     const order = await razorpay.orders.create(options); //calls razorpay api to create an order with the provided options
 
     if (!order) {
-      return res.status(500).send("Error"); // if order creation fails
+      await Order.findByIdAndUpdate(orderData._id, {
+        status: "Pending",
+        paymentMethod: "Razorpay"
+      });
+
+      return res.status(400).json({ 
+        success: false,
+        message: "Payment failed",
+        redirectUrl: `/orders/${orderData._id}` // URL to order detail page
+      });
+
     }
 
-    res.status(200).json({order, orderData});
+    res.status(200).json({
+      success: true,
+      order,
+      orderData
+    });
     
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error");
+    console.error("Razorpay Error:", err);
+
+    // If there's an error, update order status and redirect
+    if (req.params.id) {
+      await Order.findByIdAndUpdate(req.params.id, {
+        status: "Pending",
+        paymentMethod: "Razorpay"
+      });
+    }
+
+    res.status(500).json({ 
+      success: false,
+      message: "Payment processing failed",
+      redirectUrl: `/orders/${req.params.id}` // URL to order detail page
+    });
   }
 });
 
@@ -328,6 +355,29 @@ exports.placeOrder = asyncHandler(async (req, res) => {
     zip,
   } = req.body;
 
+  // Address validation
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    return res.status(400).json({ message: "Name is required." });
+  }
+  if (!mobile || !/^\d{10}$/.test(mobile)) {
+    return res.status(400).json({ message: "Valid mobile number is required." });
+  }
+  if (alternateMobile && !/^\d{10}$/.test(alternateMobile)) {
+    return res.status(400).json({ message: "Valid alternate mobile number is required." });
+  }
+  if (!location || typeof location !== 'string' || location.trim().length === 0) {
+    return res.status(400).json({ message: "Location is required." });
+  }
+  if (!city || typeof city !== 'string' || city.trim().length === 0) {
+    return res.status(400).json({ message: "City is required." });
+  }
+  if (!state || typeof state !== 'string' || state.trim().length === 0) {
+    return res.status(400).json({ message: "State is required." });
+  }
+  if (!zip || !/^\d{6}$/.test(zip)) { // Assuming ZIP code is 5 digits
+    return res.status(400).json({ message: "Valid ZIP code is required." });
+  }
+
   try {
     const cart = await Cart.findOne({ user: userId });
 
@@ -449,7 +499,7 @@ exports.getOrderHistory = asyncHandler(async (req, res) => {
 
   const orders = await Order.find({ user: userId })
     .populate({ path: "orderItems", populate: "product" })
-    .sort({ dateOrdered: -1 });
+    .sort({ createdAt: -1 });
 
   res.render("layout", {
     title: "Order History",

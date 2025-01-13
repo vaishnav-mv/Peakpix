@@ -161,6 +161,17 @@
         </div>
         <% }); %>
       </div>
+
+      <!-- Pagination Controls -->
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+              <a class="page-link"  href="/shop?page=<%= i %>"><%= i %></a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
     </div>
   </div>
 </div>
@@ -181,6 +192,19 @@
   .hero-section h1 {
     font-size: 3rem;
   }
+
+  .pagination .page-item .page-link {
+    background-color: purple; 
+    color: white; 
+    border-color: purple; 
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: reate enable light purple button button repeats access
+  }
+
+
+
 </style>
 
 <script src="/js/cart.js"></script>

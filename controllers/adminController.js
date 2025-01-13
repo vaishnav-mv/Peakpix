@@ -146,7 +146,7 @@ exports.getOrders = asyncHandler(async (req, res) => {
   const limit = 10;
   const skip = (page - 1) * limit;
 
-  const orders = await Order.find().sort({ dateOrdered: -1 }).skip(skip).limit(limit);
+  const orders = await Order.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
 
   const totalOrders = await Order.countDocuments();
   const totalPages = Math.ceil(totalOrders / limit);

@@ -23,6 +23,7 @@
                 <th scope="col">Total Amount</th>
                 <th scope="col">Payment Method</th>
                 <th scope="col">Status</th>
+                <th scope="col">Request Status</th>
                 <th class="text-center" scope="col">Date Ordered</th>
                 <th class="text-center" scope="col">Action</th>
               </tr>
@@ -50,12 +51,22 @@
                     <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
                   </select>
                 </td>
+                <td>
+                  <% if(order.return && order.return.isApproved===true)  { %>
+                    <span class="badge bg-info">Returned</span>
+                  <% } else if(order.return && order.return.status===true) { %>
+                    <span class="badge bg-warning">Return Requested</span>
+                  <% } else { %>
+                    <span class="badge bg-success">No Request</span>
+                  <% } %>
+                </td>
                 <td class="text-center"><%= new Date(order.dateOrdered).toLocaleDateString() %></td>
                 <td>
                   <form action="/admin/orders/view/<%= order._id %>" method="GET" style="display: inline">
                     <button type="submit" class="btn btn-outline-light w-100">View</button>
                   </form>
                 </td>
+               
               </tr>
               <% }); %>
             </tbody>

@@ -13,6 +13,8 @@ exports.getCheckoutPage = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ user: userId });
   const addresses = await Address.find({ user: userId });
   const coupons = await Coupon.find({ isActive: true });
+  const totalAmount = cart ? cart.total : 0;
+
   res.render("layout", {
     title: "Checkout",
     header: req.session.user ? "partials/login_header" : "partials/header",
@@ -22,6 +24,7 @@ exports.getCheckoutPage = asyncHandler(async (req, res) => {
     cart,
     addresses,
     coupons,
+    totalAmount,
   });
 });
 
@@ -534,8 +537,12 @@ exports.cancelOrder = asyncHandler(async (req, res) => {
     const orderId = req.params.id;
     const { reason } = req.body;
 
-    if (!reason || reason.trim().length === 0) {
-      return res.status(400).json({ message: "Cancel reason is required" });
+    // Validate cancel reason
+    if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+      return res.status(400).json({ message: "Cancel reason is required and cannot be empty." });
+    }
+    if (reason.trim().length < 10) { // Example: Minimum length of 10 characters
+      return res.status(400).json({ message: "Cancel reason must be at least 10 characters long." });
     }
 
     const order = await Order.findById(orderId);
@@ -570,7 +577,7 @@ exports.cancelOrder = asyncHandler(async (req, res) => {
         });
       }
 
-        // Update product stock
+      // Update product stock
       for (const orderItemId of order.orderItems) {
         const item = await OrderItem.findById(orderItemId).populate('product');
         if (item && item.product) {
@@ -586,9 +593,7 @@ exports.cancelOrder = asyncHandler(async (req, res) => {
         isCancelled: true 
       });
     } else {
-      res
-        .status(400)
-        .json({ message: "Order cannot be cancelled in its current status" });
+      res.status(400).json({ message: "Order cannot be cancelled in its current status" });
     }
 
     return res.status(200).json({
@@ -606,8 +611,12 @@ exports.returnOrder = asyncHandler(async (req, res) => {
     const orderId = req.params.id;
     const { reason } = req.body;
 
-    if (!reason || reason.trim().length === 0) {
-      return res.status(400).json({ message: "Return reason is required" });
+    // Validate return reason
+    if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+      return res.status(400).json({ message: "Return reason is required and cannot be empty." });
+    }
+    if (reason.trim().length < 10) { // Example: Minimum length of 10 characters
+      return res.status(400).json({ message: "Return reason must be at least 10 characters long." });
     }
 
     const order = await Order.findById(orderId);

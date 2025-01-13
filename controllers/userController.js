@@ -265,10 +265,43 @@ exports.logoutUser = asyncHandler(async (req, res) => {
 });
 
 exports.getShop = asyncHandler(async (req, res) => {
-  const category = "";
-  const minPrice = 200;
-  const maxPrice = 5000;
-  const sortBy = "";
+  const category = req.body.category || "";
+  const minPrice = parseInt(req.body.minPrice) || 200;
+  const maxPrice = parseInt(req.body.maxPrice) || 5000;
+  const sortBy = req.body.sort || "";
+  const page = parseInt(req.query.page) || 1;
+  const limit = 12; 
+  const skip = (page - 1) * limit;
+
+  // First, get the total count using aggregation
+  const totalCount = await Product.aggregate([
+    {
+      $lookup: {
+        from: "categories",
+        localField: "categoryId",
+        foreignField: "_id",
+        as: "categoryDetails",
+      },
+    },
+    {
+      $unwind: "$categoryDetails",
+    },
+    {
+      $match: {
+        "categoryDetails.isActive": true,
+        isActive: true,
+        price: { $gte: minPrice, $lte: maxPrice },
+      },
+    },
+    {
+      $count: "total"
+    }
+  ]);
+
+  const totalProducts = totalCount.length > 0 ? totalCount[0].total : 0;
+  const totalPages = Math.ceil(totalProducts / limit);
+
+  // Then get the paginated products
   const products = await Product.aggregate([
     {
       $lookup: {
@@ -283,8 +316,9 @@ exports.getShop = asyncHandler(async (req, res) => {
     },
     {
       $match: {
-        "categoryDetails.isActive": true, 
+        "categoryDetails.isActive": true,
         isActive: true,
+        price: { $gte: minPrice, $lte: maxPrice },
       },
     },
     {
@@ -315,6 +349,12 @@ exports.getShop = asyncHandler(async (req, res) => {
         preserveNullAndEmptyArrays: true, // Include categories without a category-wide offer
       },
     },
+    {
+      $skip: skip,
+    },
+    {
+      $limit: limit,
+    },
   ]);
 
   const productsWithDiscounts = products.map((product) => {
@@ -332,7 +372,7 @@ exports.getShop = asyncHandler(async (req, res) => {
     // Return the product along with the calculated discounted price
     return {
       ...product,
-      discountedPrice, // Add the discounted price
+      discountedPrice,
     };
   });
 
@@ -347,6 +387,8 @@ exports.getShop = asyncHandler(async (req, res) => {
     minPrice,
     maxPrice,
     sortBy,
+    currentPage: page,
+    totalPages: totalPages || 1,
   });
 });
 

@@ -75,28 +75,46 @@ function addToCart(productId) {
   })
     .then((response) => response.json())
     .then((data) => {
+      let Toast = Swal.mixin({
+        toast: true,
+        position: "top", // Change position to center
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
+      });
+
       if (data.message === "Item added to cart successfully") {
-        Swal.fire({
+        Toast.fire({
           icon: "success",
-          title: "Success!",
-          text: "Item successfully added to your cart!",
-          confirmButtonColor: "#4a2c77",
+          title: "Item successfully added to your cart!",
         });
       } else {
-        Swal.fire({
+        Toast.fire({
           icon: "error",
-          title: "Oops!",
-          text: data.message || "Failed to add item to cart",
-          confirmButtonColor: "#4a2c77",
+          title: data.message || "Failed to add item to cart",
         });
       }
     })
     .catch((error) => {
-      Swal.fire({
+      let Toast = Swal.mixin({
+        toast: true,
+        position: "top", // Change position to center
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
+      });
+
+      Toast.fire({
         icon: "error",
-        title: "Error!",
-        text: "Please login to add items into the cart",
-        confirmButtonColor: "#4a2c77",
+        title: "Please login to add items into the cart",
       });
     });
 }

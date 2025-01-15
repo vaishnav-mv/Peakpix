@@ -298,8 +298,8 @@ exports.getShop = asyncHandler(async (req, res) => {
     }
   ]);
 
-  const totalProducts = totalCount.length > 0 ? totalCount[0].total : 0;
-  const totalPages = Math.ceil(totalProducts / limit);
+  // const totalProducts = totalCount.length > 0 ? totalCount[0].total : 0;
+  // const totalPages = Math.ceil(totalProducts / limit);
 
   // Then get the paginated products
   const products = await Product.aggregate([
@@ -387,8 +387,8 @@ exports.getShop = asyncHandler(async (req, res) => {
     minPrice,
     maxPrice,
     sortBy,
-    currentPage: page,
-    totalPages: totalPages || 1,
+    // currentPage: page,
+    // totalPages: totalPages || 1,
   });
 });
 

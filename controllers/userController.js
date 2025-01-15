@@ -561,7 +561,10 @@ exports.getStock = asyncHandler(async (req, res) => {
     }
 
     // Return the stock quantity
-    res.json({ stock: product.stock });
+    res.json({
+      stock: product.stock,
+      isActive: product.isActive,
+    });
   } catch (error) {
     console.error("Error fetching stock information:", error);
     res.status(500).json({ error: "Server error" });

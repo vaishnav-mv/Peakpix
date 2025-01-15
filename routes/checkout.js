@@ -21,13 +21,13 @@ checkoutRouter.post('/wallet', userAuth, walletPayment)
 
 checkoutRouter.post('/place-order', userAuth, placeOrder)
 
-checkoutRouter.get("/payment/:orderId", userAuth, paymentSelection)
+checkoutRouter.get("/payment", userAuth, paymentSelection)
 
 checkoutRouter.post('/apply-coupons', userAuth, applyCoupon)
 
 checkoutRouter.get('/remove-coupon/:cartId', userAuth, removeCoupon)
 
-checkoutRouter.post('/order/:id', razorPay);
+checkoutRouter.post('/order', razorPay);
 
 checkoutRouter.get("/order-success/:orderId", userAuth, orderSuccessPage);
 

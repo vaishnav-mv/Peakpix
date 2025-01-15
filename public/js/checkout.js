@@ -231,7 +231,7 @@ document.getElementById("checkoutForm").addEventListener("submit", async functio
         icon: "success",
         title: result.message,
       })
-      window.location.href = `/checkout/payment/${result.orderId}`;
+      window.location.href = `/checkout/payment`;
     } else {
       Toast.fire({
         icon: "error",

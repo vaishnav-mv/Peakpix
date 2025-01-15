@@ -148,9 +148,18 @@ exports.removeCoupon = asyncHandler(async (req, res) => {
 });
 
 exports.razorPay = asyncHandler(async (req, res) => {
+  const orderData = req.session.pendingOrder; // Get the pending order data from the session
+
+  if (!orderData) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "No pending order found" 
+    });
+  }
+
   try {
     
-    const orderData = await Order.findById(req.params.id)
+    
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_SECRET,
@@ -199,20 +208,37 @@ exports.razorPay = asyncHandler(async (req, res) => {
 });
 
 exports.confirmPayment = asyncHandler(async (req, res) => {
-  const orderId = req.body.orderId;
+  
   const paymentMethod = req.body.paymentMethod;
   
-  try {
-    const order = await Order.findById(orderId)
-      .populate({
-        path: 'orderItems',
-        populate: { path: 'product' }
-      });
-      
-    if (!order) {
-      return res.status(404).json({success: false, message: "Order not found!"});
-    }
+  const orderData = req.session.pendingOrder; // Get the pending order data from the session
 
+  if (!orderData) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "No pending order found" 
+    });
+  }
+  try {
+    const orderItems = await Promise.all(
+      orderData.cartItems.map(async (item) => {
+        const orderItem = new OrderItem({
+          quantity: item.quantity,
+          product: item.productId,
+        });
+        await orderItem.save();
+        return orderItem;
+      })
+    );
+
+    // Create the order
+    const order = new Order({
+      ...orderData,
+      orderItems: orderItems.map(item => item._id),
+      paymentMethod: paymentMethod,
+      status: "Processed"
+    });
+    await order.save()
     if (paymentMethod === 'COD') {
       if (order.finalTotal > 1000) {
         return res.status(400).json({
@@ -223,7 +249,7 @@ exports.confirmPayment = asyncHandler(async (req, res) => {
     }
 
     // Update product stock after payment confirmation
-    for (const orderItem of order.orderItems) {
+    for (const orderItem of orderItems) {
       const product = orderItem.product;
       const updatedStock = product.stock - orderItem.quantity;
       const isOutOfStock = updatedStock <= 0;
@@ -237,11 +263,9 @@ exports.confirmPayment = asyncHandler(async (req, res) => {
       );
     }
 
-    order.paymentMethod = paymentMethod;
-    order.status = "Processed";
-
-    await order.save();
-
+    
+    delete req.session.pendingOrder
+    delete req.session.razorpayOrderId
     // Delete the cart and create a new empty cart
     await Cart.deleteOne({ user: order.user });
     let cart = new Cart({ user: order.user._id, items: [], total: 0 });
@@ -264,23 +288,45 @@ exports.confirmPayment = asyncHandler(async (req, res) => {
 
 
 exports.walletPayment = asyncHandler(async (req, res) => {
-  const orderId = req.body.orderId;
   const userId = req.session.user;
+  const orderData = req.session.pendingOrder;
+  if (!orderData) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "No pending order found" 
+    });
+  }
 
   try {
+    
     // Find the user and their wallet balance
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found!" });
     }
+    // Create order items first
+    const orderItems = await Promise.all(
+      orderData.cartItems.map(async (item) => {
+        const orderItem = new OrderItem({
+          quantity: item.quantity,
+          product: item.productId,
+        });
+        await orderItem.save();
+        return orderItem;
+      })
+    );
 
-    // Find the order
-    const order = await Order.findById(orderId)
-      .populate({
-        path: 'orderItems',
-        populate: { path: 'product' }
-      });
-      
+    // Create the order
+    const order = new Order({
+      ...orderData,
+      orderItems: orderItems.map(item => item._id),
+      paymentMethod: "Wallet",
+      status: "Processed"
+    });
+    const placedOrder = await order.save();
+
+  
+    
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found!" });
     }
@@ -301,7 +347,7 @@ exports.walletPayment = asyncHandler(async (req, res) => {
       const product = orderItem.product;
       const updatedStock = product.stock - orderItem.quantity;
       const isOutOfStock = updatedStock <= 0;
-
+      
       await Product.findByIdAndUpdate(
         product._id,
         {
@@ -311,9 +357,7 @@ exports.walletPayment = asyncHandler(async (req, res) => {
       );
     }
 
-    // Update the order status and payment method
-    order.paymentMethod = "Wallet";
-    order.status = "Processed";
+    
 
     // Save the updated user and order
     await User.updateOne(
@@ -323,7 +367,9 @@ exports.walletPayment = asyncHandler(async (req, res) => {
         $push: { walletTransactions: { transactionType: "Debit", amount: order.finalTotal, description: `Payment for Order ID: ${orderId}`, date: new Date() }}
       }
     );
-    await order.save();
+    
+    // Clear the pending order from session
+    delete req.session.pendingOrder;
 
     // Delete the cart and create a new empty cart
     await Cart.deleteOne({ user: order.user });
@@ -332,8 +378,8 @@ exports.walletPayment = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Payment confirmed using wallet, order updated successfully",
-      order,
+      message: "Payment confirmed using wallet",
+      order: placedOrder,
     });
   } catch (error) {
     res.status(500).json({
@@ -377,7 +423,7 @@ exports.placeOrder = asyncHandler(async (req, res) => {
   if (!state || typeof state !== 'string' || state.trim().length === 0) {
     return res.status(400).json({ message: "State is required." });
   }
-  if (!zip || !/^\d{6}$/.test(zip)) { // Assuming ZIP code is 5 digits
+  if (!zip || !/^\d{6}$/.test(zip)) {
     return res.status(400).json({ message: "Valid ZIP code is required." });
   }
 
@@ -392,18 +438,8 @@ exports.placeOrder = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    const orderItems = await Promise.all(
-      cart.items.map(async (item) => {
-        const orderItem = new OrderItem({
-          quantity: item.quantity,
-          product: item.productId,
-        });
-        await orderItem.save();
-        return orderItem;
-      })
-    );
-
-    const order = new Order({
+    // Store order data in session instead of creating the order
+    const orderData = {
       user: userId,
       name,
       mobile,
@@ -413,26 +449,27 @@ exports.placeOrder = asyncHandler(async (req, res) => {
       state,
       landmark,
       zip,
-      orderItems: orderItems.map((item) => item._id),
+      cartItems: cart.items, // Store cart items directly
       shippingCharge: cart.shippingCharge,
-      totalAmount: cart.total, 
+      totalAmount: cart.total,
       discountApplied: cart.discountApplied,
-      finalTotal: cart.finalTotal, 
+      finalTotal: cart.finalTotal,
       appliedCoupon: cart.appliedCoupon || null,
-      paymentMethod: null, 
-    });
+    };
 
-    const placedOrder = await order.save();
+    // Store the order data in session
+    req.session.pendingOrder = orderData;
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Proceeding to payment page",
-      orderId: placedOrder._id,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Error placing the order", error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: "Error processing order data", 
+      error: error.message 
+    });
   }
 });
 
@@ -440,18 +477,11 @@ exports.paymentSelection = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
 
   try {
-    const order = await Order.findById(orderId).populate({
-      path: "orderItems",
-      populate: {
-        path: "product",
-      },
-    });
+    
     
     const user = await User.findById(req.session.user).select('walletBalance');
 
-    if (!order) {
-      return res.status(404).send("Order not found");
-    }
+    const orderData = req.session.pendingOrder
 
     res.render("layout", {
       title: "Checkout",
@@ -459,11 +489,11 @@ exports.paymentSelection = asyncHandler(async (req, res) => {
       viewName: "users/payment",
       activePage: "Shop",
       isAdmin: false,
-      order,
+      orderData,
       walletBalance: user.walletBalance
     });
   } catch (error) {
-    res.status(500).send("Error fetching order");
+    res.status(500).send("Error fetching the order details");
   }
 })
 

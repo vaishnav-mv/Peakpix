@@ -239,8 +239,15 @@ async function verifyStock() {
 
         const stockData = await response.json();
         const maxQuantity = stockData.stock;
+        const isActive = stockData.isActive;
 
-        if (maxQuantity === 0) {
+        if (!isActive) {
+          Toast.fire({
+            icon: "warning",
+            title: `${name} is no longer available for purchase.`,
+          });
+          hasStockIssue = true;
+        } else if (maxQuantity === 0) {
           Toast.fire({
             icon: "warning",
             title: `${name} is out of stock.`,

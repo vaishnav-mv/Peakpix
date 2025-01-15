@@ -20,31 +20,35 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
 
   try {
     if (paymentMethod === "Razorpay") {
-      const response = await fetch(`/checkout/order/${orderId}`, {
+      const amount = finalTotal;
+      const currency = "INR";
+      const receiptId = "qwerty1";
+      const response = await fetch(`/checkout/order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: Math.round(finalTotal * 100), // Convert to paise
-          currency: "INR",
-          receipt: orderId,
+          amount: amount * 100,
+          currency,
+          receipt: receiptId,
         }),
       });
-      const data = await response.json();
+      const {order, orderData} = await response.json();
+      // const data = await response.json();
 
-      if (!data.success && data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-        return;
-      }
+      // if (!data.success && data.redirectUrl) {
+      //   window.location.href = data.redirectUrl;
+      //   return;
+      // }
 
       var options = {
         key: "rzp_test_QrPtjXNHHRSmCn",
-        amount: data.order.amount,
-        currency: data.order.currency,
+        amount,
+        currency,
         name: "Peakpix",
         description: "Test Transaction",
-        order_id: data.order.id,
+        order_id: order.id,
         handler: async function (response) {
           try {
             const confirmResponse = await fetch("/checkout", {
@@ -53,7 +57,6 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                orderId,
                 paymentMethod: 'Razorpay',
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
@@ -62,6 +65,7 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
             });
 
             const confirmData = await confirmResponse.json();
+            const orderId = confirmData.order._id
             if (confirmData.success) {
               await Toast.fire({
                 icon: "success",
@@ -83,8 +87,8 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
           }
         },
         prefill: {
-          name: data.orderData.name,
-          contact: data.orderData.mobile,
+          name: orderData.name, //your customer's name
+          contact: orderData.mobile,
         },
         notes: {
           address: "Razorpay Corporate Office",
@@ -108,8 +112,10 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
         },
         body: JSON.stringify({orderId, paymentMethod}),
       });
-      const result = await response.json(); // Parse the JS`ON response
-
+      const result = await response.json();
+      console.log("result:",result) // Parse the JS`ON response
+      console.log("result orderId:",result.order._id)
+      const orderId = result.order._id
       if (result.success) {
         await Toast.fire({
           icon: "success",
@@ -129,10 +135,10 @@ document.querySelector('.payment-form').addEventListener('submit', async (e) => 
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({orderId, paymentMethod}),
+        body: JSON.stringify({paymentMethod}),
       });
-      const result = await response.json(); // Parse the JS`ON response
-
+      const result = await response.json(); // Parse the JSON response
+      const orderId = result.order._id
       if (result.success) {
         await Toast.fire({
           icon: "success",

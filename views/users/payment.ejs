@@ -16,18 +16,19 @@ style="min-height: 50vh">
         
         <div class="form-check mt-3">
           <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="COD" 
-            <% if (totalAmount < 1000) { %> disabled <% } %> checked>
+            <% if (orderData.totalAmount > 1000) { %> disabled <% } %> >
           <label class="form-check-label d-flex align-items-center ms-3" for="cod">
             <i class="fas fa-truck me-3 text-primary" style="font-size: 1.2em;"></i>
             <span class="ml-2">Cash On Delivery</span>
-            <% if (totalAmount < 1000) { %>
-              <small class="text-danger">(Not available for orders below ₹1000)</small>
+            <% if (orderData.totalAmount > 1000) { %>
+              <small class="text-danger">(Not available for orders above ₹1000)</small>
             <% } %>
           </label>
         </div>
     
         <div class="form-check mt-4">
-          <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="Wallet">
+          <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="Wallet"
+          <% if (walletBalance===0) { %> disabled <% } %>>
           <label class="form-check-label d-flex align-items-center ms-3" for="wallet">
             <i class="fas fa-wallet me-3 text-success" style="font-size: 1.2em;"></i>
             <span class="ml-2">Wallet <small class="text-muted">(Balance: ₹<%= walletBalance %>)</small></span>
@@ -35,14 +36,14 @@ style="min-height: 50vh">
         </div>
     
         <div class="form-check mt-4">
-          <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="Razorpay">
+          <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="Razorpay" checked>
           <label class="form-check-label d-flex align-items-center ms-3" for="razorpay">
             <i class="fas fa-credit-card me-3 text-info" style="font-size: 1.2em;"></i>
             <span class="ml-2">Online Payment (Razorpay)</span>
           </label>
         </div>
     
-        <button type="submit" class="btn btn-dark mt-5 w-100" id="confirmBtn" data-orderid="<%= order._id %>" data-finaltotal="<%= order.finalTotal %>">
+        <button type="submit" class="btn btn-dark mt-5 w-100" id="confirmBtn" data-orderid="<%= orderData._id %>" data-finaltotal="<%= orderData.finalTotal %>">
           <i class="fas fa-check-circle me-3"></i>Confirm and Pay
         </button>
     
@@ -56,36 +57,36 @@ style="min-height: 50vh">
           <hr>
           
           <h6>Shipping to:</h6>
-          <p><%= order.location %>, <%= order.city %>, <%= order.state %>, <%= order.country %> - <%= order.zip %></p>
+          <p><%= orderData.location %>, <%= orderData.city %>, <%= orderData.state %>, <%= orderData.country %> - <%= orderData.zip %></p>
 
           <hr>
 
-          <% order.orderItems.forEach(item => { %>
+          <% orderData.cartItems.forEach(item => { %>
           <div class="d-flex justify-content-between mb-2">
-            <span><strong><%= item.product.name %></strong> (x<%= item.quantity %>)</span>
-            <span>₹<%= item.product.price %></span>
+            <span><strong><%= item.name %></strong> (x<%= item.quantity %>)</span>
+            <span>₹<%= item.price %></span>
           </div>
           <% }) %>
 
           <div class="d-flex justify-content-between">
             <span>Subtotal:</span>
-            <span>₹<%= order.totalAmount %></span>
+            <span>₹<%= orderData.totalAmount %></span>
           </div>
 
           <div class="d-flex justify-content-between">
             <span>Shipping Charge:</span>
-            <span>₹<%= order.shippingCharge %></span>
+            <span>₹<%= orderData.shippingCharge %></span>
           </div>
 
           <div class="d-flex justify-content-between text-success">
             <span>Discount Applied:</span>
-            <span>-₹<%= order.discountApplied %></span>
+            <span>-₹<%= orderData.discountApplied %></span>
           </div>
 
           <hr>
           <div class="d-flex justify-content-between">
             <strong>Grand Total:</strong>
-            <strong>₹<%= order.finalTotal %></strong>
+            <strong>₹<%= orderData.finalTotal %></strong>
           </div>
         </div>
       </div>
